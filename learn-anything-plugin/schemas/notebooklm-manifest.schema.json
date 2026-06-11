@@ -1,0 +1,310 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "NotebookLMManifest",
+  "description": "Metadata-only mirror of NotebookLM notebooks, link-only sources, Studio artifact metadata, and sync diagnostics for one learn-anything skill. Never store Google cookies, bearer headers, API keys, SSH private data, raw NotebookLM blobs, full MCP dumps, downloaded source files, private source text, or local retrieval caches here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "skill_slug",
+    "skill_id",
+    "created_at",
+    "updated_at",
+    "naming_convention",
+    "binding_strategy",
+    "transport",
+    "notebooks",
+    "sources",
+    "artifacts",
+    "sync"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Manifest schema version."
+    },
+    "skill_slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,80}$",
+      "description": "Filesystem-safe learn-anything skill slug."
+    },
+    "skill_id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]{4,32}$",
+      "description": "Short stable ID used in NotebookLM shard names."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "naming_convention": {
+      "type": "string",
+      "const": "LA - <skill-slug> - <short-id> - <shard>",
+      "description": "Human-readable convention used to recover NotebookLM bindings by name when the mirror is stale. Concrete notebook_name values use LA - skill-slug - skill_id - 001."
+    },
+    "binding_strategy": {
+      "type": "string",
+      "const": "names_plus_mirror",
+      "description": "NotebookLM sidecar owns real state; remote learn-anything writes a metadata mirror keyed by IDs and recoverable names."
+    },
+    "transport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "endpoint_env"],
+      "description": "Transport metadata only. Store the environment variable name, never the endpoint secret, bearer header, cookie, SSH key, or session file.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["http_via_ssh_reverse", "http_local", "sse_via_ssh_reverse", "stdio", "unknown"]
+        },
+        "endpoint_env": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{2,80}$",
+          "description": "Name of the env var that contains the MCP endpoint. The endpoint value itself is not persisted."
+        },
+        "mcp_server": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Safe server label or package name, not a config dump."
+        },
+        "last_checked_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "notebooks": {
+      "type": "array",
+      "description": "Notebook shard mirror. One skill can own multiple NotebookLM notebooks because NotebookLM limits are handled by failure-only rollover.",
+      "items": { "$ref": "#/definitions/notebook" }
+    },
+    "sources": {
+      "type": "array",
+      "description": "Link-only source mirror. Sources are URLs or approved provider links, never downloaded files or copied private text.",
+      "items": { "$ref": "#/definitions/source" }
+    },
+    "artifacts": {
+      "type": "array",
+      "description": "NotebookLM Studio artifact metadata only. Do not store downloaded artifacts, raw artifact blobs, or generated files here.",
+      "items": { "$ref": "#/definitions/artifact" }
+    },
+    "sync": {
+      "$ref": "#/definitions/sync"
+    }
+  },
+  "definitions": {
+    "last_error": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["code", "message", "occurred_at"],
+          "description": "Redacted diagnostic summary. Keep enough state for future agents to debug without raw MCP responses or secrets.",
+          "properties": {
+            "code": {
+              "type": "string",
+              "pattern": "^[A-Z0-9_:-]{2,80}$"
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500,
+              "description": "Redacted human-readable summary. No cookies, tokens, bearer headers, SSH private data, raw source text, or raw NotebookLM payloads."
+            },
+            "occurred_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "phase": {
+              "type": "string",
+              "enum": ["auth", "transport", "notebook_lookup", "notebook_create", "source_add", "query", "artifact_create", "sync", "cleanup", "unknown"]
+            }
+          }
+        }
+      ]
+    },
+    "notebook": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shard_index", "notebook_id", "notebook_name", "status", "created_at", "last_seen_at", "last_error"],
+      "properties": {
+        "shard_index": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "1-based shard index; rendered as a three-digit suffix in notebook_name."
+        },
+        "notebook_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "notebook_name": {
+          "type": "string",
+          "pattern": "^LA - [a-z0-9][a-z0-9-]{0,80} - [A-Za-z0-9_-]{4,32} - [0-9]{3}$"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "full", "stale", "missing", "error"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "last_seen_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "last_query_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "last_error": {
+          "$ref": "#/definitions/last_error"
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["resource_id", "source_id", "notebook_id", "shard_index", "title", "url", "source_type", "curation_status", "learning_role", "linked_at", "last_verified_at", "last_error"],
+      "properties": {
+        "resource_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "source_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "notebook_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "shard_index": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Public or approved provider link. Do not replace this with a local file path or downloaded copy."
+        },
+        "source_type": {
+          "type": "string",
+          "enum": ["url", "youtube", "drive", "doc", "other_link"]
+        },
+        "curation_status": {
+          "type": "string",
+          "enum": ["candidate", "curated", "linked", "indexed", "failed", "stale", "rejected"]
+        },
+        "learning_role": {
+          "type": "string",
+          "enum": ["explanation", "visualization", "demonstration", "practice", "reference", "motivation", "source_evidence", "assessment", "community", "other"]
+        },
+        "linked_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "last_verified_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "last_error": {
+          "$ref": "#/definitions/last_error"
+        }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_id", "notebook_id", "artifact_type", "title", "url", "metadata", "created_for", "created_at", "status", "last_error"],
+      "properties": {
+        "artifact_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "notebook_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "artifact_type": {
+          "type": "string",
+          "enum": ["audio", "video", "report", "quiz", "flashcards", "mind_map", "slide_deck", "infographic", "data_table", "study_guide", "other"]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "url": {
+          "type": ["string", "null"],
+          "format": "uri",
+          "description": "Safe NotebookLM link when available; never a downloaded artifact path."
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": ["string", "number", "integer", "boolean", "null"]
+          },
+          "description": "Small scalar metadata only. No raw blobs, transcript dumps, private source text, or file contents."
+        },
+        "created_for": {
+          "type": "string",
+          "pattern": "^(lesson|material|source|assessment|research):[A-Za-z0-9_.:-]+$"
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["created", "linked", "failed", "stale"]
+        },
+        "last_error": {
+          "$ref": "#/definitions/last_error"
+        }
+      }
+    },
+    "sync": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "last_sync_at", "last_sidecar_seen_at", "last_error"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "const": "write_through_remote_writes_mirror"
+        },
+        "last_sync_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "last_sidecar_seen_at": {
+            "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "last_error": {
+          "$ref": "#/definitions/last_error"
+        }
+      }
+    }
+  }
+}

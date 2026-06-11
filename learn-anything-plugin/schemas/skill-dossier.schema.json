@@ -1,0 +1,178 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SkillDossier",
+  "description": "Skill research output: component inventory, dependency graph, frequency analysis, transfer pathways, failure points. Graph structure mirrors Apache AGE vertex/edge model.",
+  "type": "object",
+  "required": ["id", "assessment_id", "created_at", "target_skill", "graph", "frequency_analysis", "failure_points"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "assessment_id": { "type": "string", "format": "uuid", "description": "FK to domain-assessment" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "target_skill": { "type": "string" },
+
+    "graph": {
+      "type": "object",
+      "required": ["vertices", "edges"],
+      "description": "Dependency graph in AGE-compatible vertex/edge format",
+      "properties": {
+        "vertices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "label", "name", "description", "blooms_level", "component_type", "confidence"],
+            "properties": {
+              "id": { "type": "string", "description": "Unique vertex ID, used as canonical reference across all schemas" },
+              "label": { "type": "string", "enum": ["Concept", "Skill"], "description": "AGE vertex label" },
+              "name": { "type": "string", "description": "Short human-readable name" },
+              "description": { "type": "string", "description": "What this component covers" },
+              "blooms_level": { "type": "string", "enum": ["remember", "understand", "apply", "analyze", "evaluate", "create"] },
+              "component_type": { "type": "string", "enum": ["recurrent", "non_recurrent"], "description": "4C/ID classification: recurrent = automate via drill, non-recurrent = schema building" },
+              "cognitive_load_type": { "type": "string", "enum": ["intrinsic", "extraneous", "germane"] },
+              "frequency_score": { "type": "number", "minimum": 0, "maximum": 1, "description": "How frequently this component is used in practice (1 = always)" },
+              "impact_score": { "type": "number", "minimum": 0, "maximum": 1, "description": "How much mastering this component contributes to overall competence" },
+              "confidence": { "type": "string", "enum": ["high", "medium", "low"], "description": "System confidence in this decomposition" },
+              "verification_needed": { "type": "string", "description": "If confidence is low, what specifically needs expert validation" },
+              "embedding": { "type": "array", "items": { "type": "number" }, "description": "DEFERRED — Semantic embedding vector for pgvector similarity search. Not generated in current architecture (no vector DB). Leave null/omitted." },
+              "cluster_id": { "type": "string", "description": "Natural cluster grouping for modular visualization" },
+              "assessment_criteria": { "type": "string", "description": "How to assess mastery of this component" },
+              "example": { "type": "string", "description": "Concrete real-world example demonstrating this component" }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["from_id", "to_id", "label"],
+            "properties": {
+              "from_id": { "type": "string", "description": "Source vertex ID" },
+              "to_id": { "type": "string", "description": "Target vertex ID" },
+              "label": {
+                "type": "string",
+                "enum": ["PREREQUISITE", "RELATED", "REINFORCEMENT"],
+                "description": "Edge type: PREREQUISITE (directed, from prereq to dependent), RELATED (similarity), REINFORCEMENT (practicing A strengthens B)"
+              },
+              "strength": { "type": "number", "minimum": 0, "maximum": 1, "description": "Edge weight / strength" },
+              "prerequisite_type": { "type": "string", "enum": ["hard", "soft"], "description": "For PREREQUISITE edges: hard = must learn first, soft = helps but not required" },
+              "transfer_coefficient": { "type": "number", "minimum": 0, "maximum": 1, "description": "For RELATED edges: degree to which mastery transfers between these components" }
+            }
+          }
+        }
+      }
+    },
+
+    "frequency_analysis": {
+      "type": "object",
+      "properties": {
+        "distribution_type": { "type": "string", "description": "e.g. '80/20', '90/10', '70/30'" },
+        "coverage_thresholds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "component_percentage": { "type": "number" },
+              "competence_coverage": { "type": "number" }
+            }
+          },
+          "description": "e.g. [{component_percentage: 20, competence_coverage: 80}]"
+        },
+        "gateway_nodes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Vertex IDs with highest betweenness centrality — unlock the most downstream learning"
+        },
+        "analysis_notes": { "type": "string" }
+      }
+    },
+
+    "transfer_pathways": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source_domain", "target_vertex_id", "similarity_score", "transfer_type"],
+        "properties": {
+          "source_domain": { "type": "string", "description": "Learner's existing skill domain" },
+          "target_vertex_id": { "type": "string", "description": "Skill graph vertex that may benefit from transfer" },
+          "similarity_score": { "type": "number", "minimum": 0, "maximum": 1 },
+          "transfer_type": { "type": "string", "enum": ["near", "moderate", "far", "negative_risk"] },
+          "description": { "type": "string" },
+          "recommended_action": { "type": "string", "enum": ["auto_boost", "accelerated_path", "probe_first", "contrast_instruction"] }
+        }
+      }
+    },
+
+    "failure_points": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "description"],
+        "properties": {
+          "type": { "type": "string", "enum": ["beginner_mistake", "plateau", "strategy_transition", "illusion_of_competence"] },
+          "description": { "type": "string" },
+          "typical_timing": { "type": "string", "description": "When this typically occurs, e.g. 'week 3-4'" },
+          "affected_vertices": { "type": "array", "items": { "type": "string" }, "description": "Vertex IDs affected" },
+          "mitigation": { "type": "string" }
+        }
+      }
+    },
+
+    "research_sources": {
+      "type": "array",
+      "description": "Lightweight source catalog for research and NotebookLM-linked resources. Keep this metadata-only: no large snippets, raw NotebookLM blobs, full MCP dumps, downloaded files, credentials, or private source text. Detailed used citations belong in citations.jsonl.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string", "enum": ["expert_interview", "curriculum", "textbook", "research_paper", "course", "web_resource", "notebooklm_source", "artifact"] },
+          "title": { "type": "string" },
+          "url": { "type": "string" },
+          "notes": { "type": "string" },
+          "format": { "type": "string", "enum": ["article", "book", "paper", "course", "docs", "video", "slides", "diagram", "infographic", "interactive", "audio", "community", "tool", "other"] },
+          "learning_role": { "type": "string", "enum": ["explanation", "visualization", "demonstration", "practice", "reference", "motivation", "source_evidence", "assessment", "community", "other"] },
+          "audience_level": { "type": "string", "enum": ["beginner", "intermediate", "advanced", "mixed", "unknown"] },
+          "annotation": { "type": "string", "maxLength": 500, "description": "One or two short lines explaining why this source is useful." },
+          "curation_status": { "type": "string", "enum": ["candidate", "curated", "linked", "indexed", "rejected", "stale"] },
+          "resource_id": { "type": "string" },
+          "notebook_id": { "type": "string" },
+          "source_id": { "type": "string" },
+          "citation_refs": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+
+    "freshness_assessment": {
+      "type": "object",
+      "properties": {
+        "risk_level": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "very_high"],
+          "description": "How rapidly the field is evolving"
+        },
+        "last_major_change": {
+          "type": "string",
+          "description": "Date or description of most recent significant change"
+        },
+        "evolution_notes": {
+          "type": "string",
+          "description": "Notes on what is changing and how fast"
+        }
+      },
+      "description": "Assessment of how rapidly this field is evolving — informs curriculum update frequency"
+    },
+
+    "expert_panel": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "contribution"],
+        "properties": {
+          "name": { "type": "string" },
+          "contribution": { "type": "string", "description": "What they are known for in this field" },
+          "teaching_style": { "type": "string", "description": "Known teaching approach or persona, if applicable" },
+          "source_url": { "type": "string" }
+        }
+      },
+      "description": "Masters of the field identified during research — presented to learner as potential instructor personas"
+    }
+  }
+}

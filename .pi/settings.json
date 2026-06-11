@@ -1,0 +1,19 @@
+{
+  "skillful": {
+    "hiddenSkills": [
+      "curriculum-architect",
+      "dashboard-generator",
+      "domain-assessor",
+      "find-skills",
+      "grill-me-with-options",
+      "learn-anything",
+      "learner-calibrator",
+      "lesson-studio",
+      "material-forge",
+      "meta-learning-orchestrator",
+      "skill-researcher",
+      "training-conductor"
+    ],
+    "toggleSlots": {}
+  }
+}
