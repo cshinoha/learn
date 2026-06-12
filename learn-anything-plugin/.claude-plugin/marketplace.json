@@ -1,0 +1,14 @@
+{
+  "name": "learn-anything-local",
+  "owner": {
+    "name": "local"
+  },
+  "plugins": [
+    {
+      "name": "learn-anything",
+      "source": ".",
+      "description": "A local development copy of learn-anything for this project.",
+      "version": "2.0.0-local"
+    }
+  ]
+}

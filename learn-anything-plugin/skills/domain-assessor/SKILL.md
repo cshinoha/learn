@@ -146,4 +146,4 @@ Present a conversational summary to the learner covering:
 
 ## Handoff
 
-After writing domain-assessment.json, the Skill Researcher takes over. It reads the classification and learner profile to guide its decomposition research. Summarize for the learner: what was classified, the short-term plan, and that next comes skill research (which may involve web searches and take some time).
+After writing domain-assessment.json, the Skill Researcher takes over. It reads the classification and learner profile to guide its decomposition research. Summarize for the learner: what was classified, the short-term plan, and that next comes NotebookLM-grounded skill research (source discovery and retrieval may take some time).

@@ -207,17 +207,19 @@ For each session that includes interleaving:
 Generate as Markdown files. If PDF export is needed, use the pdf skill.
 
 **External resource list** — Curated recommendations:
-- Best books/courses for self-teaching (from the Researcher's findings)
+- Best books/courses for self-teaching (from the Researcher's NotebookLM-grounded findings)
 - Video resources for visual/motor learning
 - Community links (forums, Discord, subreddits)
 - Tool recommendations
-- NotebookLM-indexed resources from `skill-dossier.research_sources`, `notebooklm-manifest.json`, and `citations.jsonl` pointers when present
+- NotebookLM-indexed resources from `skill-dossier.research_sources`, `notebooklm-manifest.json`, and `citations.jsonl` pointers
 
 NotebookLM resource rules:
+- For source-grounded resource recommendations, NotebookLM-indexed sources are required. If relevant sources are missing, route back to Skill Researcher/source discovery rather than inventing a web-only list.
 - Treat NotebookLM Studio artifacts as optional learning materials when manifest metadata says they exist, but do not download artifact files by default.
-- Show concise annotations for external resources: why open it, audience level, and learning role.
+- Show concise annotations for external resources: why open it, audience level, learning role, and source selection rationale.
 - For visual topics, prefer linked `infographic` or `mind_map` artifacts when NotebookLM created them.
-- Keep resource lists metadata-only; do not paste large snippets, raw NotebookLM answers, raw MCP dumps, or copied source text.
+- Keep resource lists metadata-only; do not paste large snippets, raw NotebookLM answers, raw dumps, or copied source text.
+- On NotebookLM failure, refresh/reconnect once. If it still fails, ask the user whether to wait/fix NotebookLM, use saved citations only, or stop the source-grounded resource work; do not silently substitute ordinary web research.
 
 ### 6. Dependency Graph Visualization
 

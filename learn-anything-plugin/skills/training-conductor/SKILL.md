@@ -66,6 +66,7 @@ At the start of EVERY session:
    - a worked-example drill exists but there is no reusable HTML lesson or quick-reference page for the topic
    - the learner explicitly asks for a lesson, explanation page, or printable reference
    If you invoke Lesson Studio, write `teach/bridge/lesson-request.json` first with the scoped topic, prerequisites, must-cover misconceptions, and desired drill follow-up. After Lesson Studio returns, use its `lesson-result.json` as a session input — but do NOT let it update mastery or progress.
+6. **Use NotebookLM-backed video timestamps only when needed** — For video evidence or navigation, use NotebookLM sources named `<title> [<video-id>]`, subtitle sidecars ending `.srt.txt`, and chapter sidecars ending `.chapters.txt`. Timestamp links must come from NotebookLM subtitle evidence (prefer `scripts/notebooklm/query-video-timestamps.mjs`); do not query YouTube directly for content or invent timestamps. Raw subtitle/chapter text must never be written into transcripts, manifests, citations, or progress state.
 #### Teaching Preferences
 
 Read `teaching_preferences` from domain-assessment.json:
@@ -100,7 +101,7 @@ Initialize with:
 
 ### NotebookLM source triggers and fallback
 
-Use NotebookLM RAG-first when the learner asks for, or the session requires:
+NotebookLM RAG-first retrieval is required when the learner asks for, or the session requires:
 - factual explanation
 - source-backed question
 - citation, timestamp, page, section, slide, quote, or deep-link request
@@ -110,13 +111,14 @@ Use NotebookLM RAG-first when the learner asks for, or the session requires:
 
 NotebookLM is not required for coaching, motivation, session-flow management, meta-learning discussion, or purely interactive practice that does not depend on source evidence.
 
-When a source trigger fires and a phase-scoped NotebookLM MCP endpoint is available:
-1. Use `cross_notebook_query` across the active skill's notebook array from `notebooklm-manifest.json`.
-2. Bring only the compact retrieval pack into the dialogue context.
-3. Cite selected evidence naturally in the explanation and preserve detailed used citations in `citations.jsonl` when they are actually used.
-4. Keep MCP enabled only for the retrieval/citation phase.
+When a source trigger fires:
+1. Read `notebooklm-manifest.json` and use the active skill's notebook array for grounded retrieval.
+2. If no relevant indexed source exists, route to Skill Researcher/source discovery before answering as source-grounded.
+3. Bring only the compact retrieval pack into the dialogue context.
+4. Cite selected evidence naturally in the explanation and preserve detailed used citations in `citations.jsonl` when they are actually used.
+5. Keep NotebookLM enabled only for the retrieval/citation phase.
 
-Fallback policy: on auth/transport/tool failure, attempt `refresh_auth` or reconnect once. If it still fails, ask the user whether to wait/fix NotebookLM, continue without NotebookLM, use saved citations only, or stop the source-grounded work. Do not silently substitute ordinary web research or uncited parametric knowledge.
+Fallback policy: on auth/transport/tool failure, attempt refresh/reconnect once. If it still fails, ask the user whether to wait/fix NotebookLM, use saved citations only, or stop the source-grounded work. Do not silently substitute ordinary web research or uncited parametric knowledge.
 
 ### Lesson Artifact Protocol (when invoked)
 

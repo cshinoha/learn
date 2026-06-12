@@ -35,8 +35,8 @@ learn-anything/
 │   ├── knowledge-graph.json
 │   ├── learning-plan.json
 │   ├── srs-cards.json
-│   ├── notebooklm-manifest.json  ← Optional NotebookLM metadata mirror
-│   ├── citations.jsonl           ← Optional normalized used citations
+│   ├── notebooklm-manifest.json  ← NotebookLM metadata mirror for source-grounded work
+│   ├── citations.jsonl           ← Normalized used citations for source-grounded work
 │   ├── progress.json
 │   ├── materials/
 │   ├── teach/
@@ -73,8 +73,8 @@ These JSON files in the active skill workspace are the system's persistent state
 | `learn-anything/<slug>/knowledge-graph.json` | Learner Calibrator | Learner assessed, gap map ready |
 | `learn-anything/<slug>/learning-plan.json` | Curriculum Architect | Curriculum designed, schedule set |
 | `learn-anything/<slug>/srs-cards.json` | Material Forge | Flashcards generated |
-| `learn-anything/<slug>/notebooklm-manifest.json` | Skill Researcher / Lesson Studio | Optional NotebookLM notebook/source/artifact metadata mirror |
-| `learn-anything/<slug>/citations.jsonl` | Skill Researcher / Lesson Studio / Training Conductor | Optional normalized ledger of citations actually used |
+| `learn-anything/<slug>/notebooklm-manifest.json` | Skill Researcher / Lesson Studio | NotebookLM notebook/source/artifact metadata mirror for source-grounded work |
+| `learn-anything/<slug>/citations.jsonl` | Skill Researcher / Lesson Studio / Training Conductor | Normalized ledger of citations actually used in source-grounded work |
 | `learn-anything/<slug>/progress.json` | Training Conductor | Training in progress |
 | `learn-anything/<slug>/external-imports/` | User/external tools | Data waiting to be processed |
 
@@ -139,13 +139,14 @@ ELIF Training Conductor signals re-calibration needed:
 
 ### NotebookLM routing notes
 
-NotebookLM integration is optional but preferred for source-grounded phases. The orchestrator does not decide pedagogy for downstream skills; it only routes phases, tracks readiness, and enforces fallback boundaries.
+NotebookLM is required for source-grounded phases, especially Skill Researcher source discovery and RAG-first lesson/material generation. The orchestrator does not decide pedagogy for downstream skills; it routes phases, tracks readiness, and enforces fallback boundaries.
 
-- Enable NotebookLM MCP only phase-scoped for research, source linking/indexing, RAG-first lesson generation, citation retrieval, and Studio artifact generation.
-- Do not keep NotebookLM MCP always on during ordinary training/chat turns.
+- Enable NotebookLM access only phase-scoped for research source discovery, source linking/indexing, RAG-first lesson generation, citation retrieval, and Studio artifact generation.
+- Do not keep NotebookLM enabled during ordinary training/chat turns that do not depend on source evidence.
+- Route Skill Researcher source discovery through `scripts/notebooklm/research-sources.mjs`; it must show candidate source indices/titles/descriptions before selective import.
 - Know that `notebooklm-manifest.json` and `citations.jsonl` may exist in the active skill workspace and should be preserved on errors.
-- If NotebookLM is unavailable and the user requests source-grounded work, follow the fallback policy: refresh/reconnect once, then ask the user whether to wait/fix, continue without NotebookLM, use saved citations, or stop.
-- Never silently fall back from failed NotebookLM retrieval to ordinary web research while presenting the result as NotebookLM-grounded.
+- If NotebookLM is unavailable for source-grounded work, follow the fallback policy: refresh/reconnect once, then ask the user whether to wait/fix NotebookLM, use saved citations only, or stop.
+- Never silently fall back from failed NotebookLM discovery/retrieval to ordinary web research or uncited parametric knowledge while presenting the result as grounded.
 
 ### Calibration Loop
 
@@ -163,8 +164,8 @@ Maximum loop iterations: 2 (prevent infinite research cycles).
 If any component fails or produces invalid output:
 1. Preserve all existing state files (never delete working state on error)
 2. Attempt the component again with the same inputs
-3. If it fails twice: fall back to a simplified version
-   - Researcher fallback: generate a basic skill tree from LLM knowledge without web search
+3. If it fails twice: fall back to a simplified version only where the fallback does not violate source-grounding requirements
+   - Researcher fallback: stop and ask the user. If the user explicitly approves an ungrounded sketch, label it preliminary and do not present it as source-grounded.
    - Calibrator fallback: use the learner profile's self-reported experience as the overlay
    - Architect fallback: linear sequencing of priority gaps
    - Forge fallback: generate basic flashcards only
@@ -192,7 +193,7 @@ The typical onboarding spans 1-2 conversations:
 **Conversation 1 — Assessment & Research:**
 1. Greet the learner. Ask what they want to learn.
 2. Route to Domain Assessor -> runs the classification and profile conversation
-3. Route to Skill Researcher -> deep investigation (this runs largely autonomously with web search, then presents findings to the learner for validation)
+3. Route to Skill Researcher -> deep investigation (this runs largely autonomously with NotebookLM source discovery and RAG-first retrieval, then presents findings to the learner for validation)
 4. Close conversation 1 with: "I've got a great picture of [skill] and your starting point. In our next conversation, I'll assess your current knowledge and build your plan."
 
 **Conversation 2 — Calibration, Plan, Materials:**
@@ -204,7 +205,7 @@ The typical onboarding spans 1-2 conversations:
 10. Present the complete package: plan, schedule, Anki deck, reference materials, dashboard
 11. Transition to LEARNING phase: "Ready for your first session? Or take some time to review everything and start tomorrow."
 
-**Why two conversations?** The research step benefits from web search which can take time. Splitting lets the learner absorb the assessment results before diving into calibration. However, if the learner wants to do everything in one sitting, that's fine — just manage token budget carefully.
+**Why two conversations?** The research step benefits from NotebookLM source discovery, selective import, and grounded retrieval, which can take time. Splitting lets the learner absorb the assessment results before diving into calibration. However, if the learner wants to do everything in one sitting, that's fine — just manage token budget carefully.
 
 ## Ongoing Training Flow
 

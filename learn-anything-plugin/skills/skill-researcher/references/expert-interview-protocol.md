@@ -4,57 +4,58 @@ Based on Tim Ferriss' meta-learning methodology from *The 4-Hour Chef*, adapted 
 
 ## The Ferriss Questions
 
-Use these questions as the framework for web searches and LLM-based analysis. For each question, search for real expert perspectives (interviews, AMAs, masterclasses, podcasts, forum posts) rather than relying solely on LLM knowledge.
+Use these questions as the framework for NotebookLM source-discovery queries and source-grounded synthesis. For each question, find real expert perspectives (interviews, AMAs, masterclasses, podcasts, forum posts) through NotebookLM first rather than relying on LLM knowledge. Ordinary web search is only a URL-discovery fallback; any discovered URL must be imported into NotebookLM before it is used as evidence.
 
 ### Question 1: The Outlier Question
 "Who is good at [skill] despite being poorly built for it or at a disadvantage? Who should NOT be good but is? What do they do differently?"
 
 **Why it matters:** Identifies transferable methods rather than genetic gifts. People who succeeded despite disadvantages had to develop explicit, articulable systems.
 
-**Search strategy:** Search for "[skill] unlikely success story", "[skill] late starter", "[skill] self-taught expert", "[skill] overcame disadvantage"
+**Source-discovery strategy:** Query NotebookLM for "[skill] unlikely success story", "[skill] late starter", "[skill] self-taught expert", "[skill] overcame disadvantage"
 
 ### Question 2: The Waste Question
 "What are the biggest mistakes and myths in [skill] training? What are the biggest wastes of time?"
 
 **Why it matters:** Prunes the learning tree. Eliminates common dead ends before the learner walks into them.
 
-**Search strategy:** Search for "[skill] biggest mistakes beginners", "[skill] common myths", "[skill] waste of time training", "[skill] what I wish I knew"
+**Source-discovery strategy:** Query NotebookLM for "[skill] biggest mistakes beginners", "[skill] common myths", "[skill] waste of time training", "[skill] what I wish I knew"
 
 ### Question 3: The Novice-Pro Gap
 "What mistakes do novices make? What about mistakes even at the pro level?"
 
 **Why it matters:** Surfaces failure points at both beginner and advanced stages. Beginner mistakes inform early curriculum; pro mistakes reveal the real complexity of the skill.
 
-**Search strategy:** Search for "[skill] beginner vs advanced mistakes", "[skill] common errors", "why [skill] learners plateau"
+**Source-discovery strategy:** Query NotebookLM for "[skill] beginner vs advanced mistakes", "[skill] common errors", "why [skill] learners plateau"
 
 ### Question 4: The Resource Question
 "What are your favorite instructional books or resources? If people had to teach themselves, what would you suggest?"
 
 **Why it matters:** Identifies highest signal-to-noise learning materials, pre-vetted by experts.
 
-**Search strategy:** Search for "best [skill] books for self-teaching", "[skill] learning resources reddit", "[skill] recommended curriculum"
+**Source-discovery strategy:** Query NotebookLM for "best [skill] books for self-teaching", "[skill] learning resources reddit", "[skill] recommended curriculum"
 
 ### Question 5: The Million Dollar Question (the forcing function)
 "If you were to train me for four weeks for a [skill] competition and had a million dollars on the line, what would the training look like? What if I trained for eight weeks?"
 
 **Why it matters:** Cuts through politeness, theory, and conventional wisdom. Forces identification of only the highest-impact activities. The time constraint compels ruthless prioritization.
 
-**Search strategy:** Search for "[skill] accelerated training", "[skill] learn fast intensive", "[skill] crash course expert", "[skill] fastest path to competence"
+**Source-discovery strategy:** Query NotebookLM for "[skill] accelerated training", "[skill] learn fast intensive", "[skill] crash course expert", "[skill] fastest path to competence"
 
 ### Question 6: The Idiosyncrasy Question
 "What makes you different? What's the oddest thing you do for training? Who trained you or influenced you?"
 
 **Why it matters:** Surfaces non-obvious practices that differentiate high performers. Conventional training produces conventional results.
 
-**Search strategy:** Search for "[skill] unconventional training", "[skill] unusual technique", "[skill] secret practice method"
+**Source-discovery strategy:** Query NotebookLM for "[skill] unconventional training", "[skill] unusual technique", "[skill] secret practice method"
 
 ## Using the Questions
 
 For each question:
-1. First, search the web for real expert answers — interviews, podcasts, Reddit AMAs, blog posts
-2. Then synthesize across multiple expert perspectives
-3. Note where experts agree (these are likely fundamental truths) and where they disagree (these are areas of genuine uncertainty or personal preference)
-4. Flag when the LLM is filling gaps with general knowledge rather than citing specific expert perspectives — mark these as lower confidence
+1. First, use NotebookLM source discovery for real expert answers — interviews, podcasts, Reddit AMAs, blog posts
+2. Review candidate titles/descriptions and import only deliberately selected sources
+3. Then synthesize across multiple imported expert perspectives using compact grounded retrieval
+4. Note where experts agree (these are likely fundamental truths) and where they disagree (these are areas of genuine uncertainty or personal preference)
+5. Flag when the model is filling gaps with general knowledge rather than citing specific expert perspectives — mark these as lower confidence
 
 ## The Deconstruction Dozen (for language learning)
 

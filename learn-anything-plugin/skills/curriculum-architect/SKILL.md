@@ -166,7 +166,7 @@ Follow `references/motivation-architecture.md` to build all seven layers:
 2. **Process goals**: Write specific daily process goals for each phase of the curriculum
 3. **Competence markers**: Define visible progress milestones tied to real retention (not effort)
 4. **Flow/deliberate practice**: Built into session design above
-5. **Community resources**: Suggest relevant communities, practice partners, or accountability structures (research via web search if needed)
+5. **Community resources**: Suggest relevant communities, practice partners, or accountability structures from the NotebookLM-grounded research sources. If a needed community URL is missing, use ordinary web search only for URL discovery, then route it through NotebookLM before treating it as source-grounded.
 6. **Plateau protocols**: Built into the schedule above
 7. **Stakes plan**: Only if the learner's intrinsic motivation is low for specific tasks. Autonomy-supportive framing.
 

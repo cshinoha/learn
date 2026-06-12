@@ -58,7 +58,7 @@ Which skill populates which fields:
 
 **Conversation 1: Assessment + Research**
 - Domain Assessor: classify skill, gather learner profile (~15-20 min)
-- Skill Researcher: deep investigation, dependency graph (~10-15 min with web search)
+- Skill Researcher: deep investigation, dependency graph (~10-15 min with NotebookLM source discovery and grounded retrieval)
 - Natural stopping point: "I've mapped out the skill. Next time we'll assess what you already know and design your curriculum."
 
 **Conversation 2: Calibration + Plan + Materials + Dashboard**
@@ -73,7 +73,7 @@ Which skill populates which fields:
 The Learner Calibrator will typically trigger at least one round of re-research — assessment almost always reveals gaps or surprises the initial research didn't anticipate. Max 2 iterations to prevent indefinite cycling.
 
 1. Calibrator flags re-research triggers (unexpected expertise, gaps in assumed prerequisites, undocumented approaches, low confidence across >30% of vertices)
-2. Route back to Skill Researcher for targeted additional research (not a full re-run)
+2. Route back to Skill Researcher for targeted additional NotebookLM-grounded research (not a full re-run)
 3. Researcher updates skill-dossier.json with new/modified vertices
 4. Route back to Calibrator to re-assess only new/changed vertices (preserving existing mastery data)
 5. Continue to Curriculum Architect when Calibrator signals stability (no new triggers)
