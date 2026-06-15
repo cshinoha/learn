@@ -109,7 +109,7 @@ Frame the engagement as identity adoption, not task completion:
 
 ### Step 6: Produce Output
 
-Write the complete Domain Assessment Profile as structured JSON conforming to `schemas/domain-assessment.schema.json`. Read the schema file first to ensure all required fields are present.
+Write the complete Domain Assessment Profile as structured JSON conforming to `../schemas/domain-assessment.schema.json`. Read the schema file first to ensure all required fields are present.
 
 **Create the skill workspace** if this is a new skill:
 1. Derive the skill slug from the target skill name (lowercase, hyphenated)
@@ -121,7 +121,7 @@ Save the JSON to `learn-anything/<skill-slug>/domain-assessment.json`.
 ### Validate Output
 
 Before writing the output file, verify:
-1. The JSON conforms to `schemas/domain-assessment.schema.json` — all required fields present and correctly typed
+1. The JSON conforms to `../schemas/domain-assessment.schema.json` — all required fields present and correctly typed
 2. All UUID fields are valid v4 UUIDs
 3. All date-time fields are ISO 8601 format
 4. All enum fields use values from the schema's enum lists

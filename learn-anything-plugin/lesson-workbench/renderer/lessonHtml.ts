@@ -502,6 +502,77 @@ const JS = `
       }
     });
   });
+
+  // ── Restore actions from localStorage on page load ──
+  function restoreAnnotation(root, start, end, note) {
+    if (start < 0 || end < 0 || start >= end) return;
+    // Walk text nodes to find the range
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+    var pos = 0;
+    var sn = null, so = 0;
+    var en = null, eo = 0;
+    while (walker.nextNode()) {
+      var n = walker.currentNode;
+      var len = n.textContent.length;
+      var nextPos = pos + len;
+      if (sn === null && start >= pos && start <= nextPos) { sn = n; so = start - pos; }
+      if (en === null && end >= pos && end <= nextPos) { en = n; eo = end - pos; }
+      pos = nextPos;
+    }
+    if (!sn || !en) return;
+    // Don't restore if already annotated at this position
+    if (sn.parentElement && sn.parentElement.closest('.annotated')) return;
+    if (en.parentElement && en.parentElement.closest('.annotated')) return;
+    var range = document.createRange();
+    range.setStart(sn, so);
+    range.setEnd(en, eo);
+    var wrapper = document.createElement('span');
+    wrapper.className = 'annotated';
+    wrapper.title = note;
+    wrapper.dataset.annStart = start;
+    wrapper.dataset.annEnd = end;
+    try {
+      range.deleteContents();
+      range.insertNode(wrapper);
+    } catch(e) {}
+  }
+
+  function restoreActions() {
+    var saved = localStorage.getItem('lw_actions_' + window._lessonFile);
+    if (!saved) return;
+    try {
+      var restored = JSON.parse(saved);
+      if (!Array.isArray(restored) || restored.length === 0) return;
+      restored.forEach(function(act) { actions.push(act); });
+      restored.forEach(function(act) {
+        if (act.action === 'difficulty') {
+          var block = document.querySelector('[data-difficulty="' + act.order + '"]');
+          if (!block) return;
+          block.querySelectorAll('button').forEach(function(b) {
+            b.classList.toggle('on', parseInt(b.dataset.star) <= act.rating);
+          });
+        } else if (act.action === 'comment') {
+          var ta = document.querySelector('[data-comment="' + act.order + '"] textarea');
+          if (ta) ta.value = act.note;
+        } else if (act.action === 'answer') {
+          var ta = document.querySelector('[data-answer="' + act.order + '"] textarea');
+          if (ta) ta.value = act.answer;
+        } else if (act.action === 'choice') {
+          var block = document.querySelector('[data-quiz="' + act.order + '"]');
+          if (!block) return;
+          block.querySelectorAll('input').forEach(function(inp) {
+            inp.checked = act.choices.indexOf(inp.value) >= 0;
+          });
+        } else if (act.action === 'annotation') {
+          var block = document.querySelector('[data-order="' + act.order + '"]');
+          if (block) restoreAnnotation(block, act.start, act.end, act.note);
+        }
+      });
+      updateSummary();
+    } catch(e) {}
+  }
+
+  restoreActions();
 })();
 `;
 

@@ -16,7 +16,7 @@ All state files live in `learn-anything/<skill-slug>/`. Read `learn-anything/act
 Before starting, read:
 1. `learn-anything/<skill-slug>/domain-assessment.json` — Skill classification, learner constraints, approach strategy, identity frame
 2. `learn-anything/<skill-slug>/knowledge-graph.json` — The gap map: dependency graph with learner overlay, priority gaps, transfer leverage
-3. `schemas/learning-plan.schema.json` — Output format
+3. `../schemas/learning-plan.schema.json` — Output format
 4. `references/4cid-encoding.md` — Curriculum generation rules (4C/ID, Elaboration Theory, Productive Failure, interleaving, spacing, mastery gates)
 5. `references/motivation-architecture.md` — Seven-layer motivation system
 
@@ -172,12 +172,12 @@ Follow `references/motivation-architecture.md` to build all seven layers:
 
 ### Step 5: Produce Output
 
-Write the complete Learning Plan as JSON conforming to `schemas/learning-plan.schema.json`. Save to `learn-anything/<skill-slug>/learning-plan.json`.
+Write the complete Learning Plan as JSON conforming to `../schemas/learning-plan.schema.json`. Save to `learn-anything/<skill-slug>/learning-plan.json`.
 
 ### Validate Output
 
 Before writing the output file, verify:
-1. The JSON conforms to `schemas/learning-plan.schema.json` — all required fields present and correctly typed
+1. The JSON conforms to `../schemas/learning-plan.schema.json` — all required fields present and correctly typed
 2. All UUID fields are valid v4 UUIDs
 3. All date-time fields are ISO 8601 format
 4. All enum fields use values from the schema's enum lists

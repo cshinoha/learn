@@ -16,7 +16,7 @@ All state files live in `learn-anything/<skill-slug>/`. Read `learn-anything/act
 Before starting, read:
 1. `learn-anything/<skill-slug>/learning-plan.json` — The curriculum: task classes, sequences, session templates, SRS schedule
 2. `learn-anything/<skill-slug>/knowledge-graph.json` — The skill graph with learner overlay (for difficulty calibration and transfer-leveraged analogies)
-3. `schemas/srs-cards.schema.json` — Flashcard output format
+3. `../schemas/srs-cards.schema.json` — Flashcard output format
 4. `references/card-design-guide.md` — Card design principles and anti-patterns
 5. `references/quality-rubrics.md` — Quality checks for all material types
 6. `../training-conductor/references/session-templates.md` — Session templates (for designing template-aligned materials)
@@ -290,7 +290,7 @@ For SRS cards specifically, also verify:
 ### Validate Output
 
 Before writing the output file, verify:
-1. The JSON conforms to `schemas/srs-cards.schema.json` — all required fields present and correctly typed
+1. The JSON conforms to `../schemas/srs-cards.schema.json` — all required fields present and correctly typed
 2. All UUID fields are valid v4 UUIDs
 3. All date-time fields are ISO 8601 format
 4. All enum fields use values from the schema's enum lists

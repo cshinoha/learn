@@ -67,15 +67,15 @@ If the upstream teaching scope is ambiguous, stop and report what is missing rat
 For source-grounded lessons, factual explanations, document/book/video references, citation/timestamp requests, or disputed claims, NotebookLM is required before writing substantive content. Do not produce a source-grounded lesson from ordinary web pages or uncited parametric knowledge.
 
 1. Read `notebooklm-manifest.json` and `citations.jsonl` when present. Use the manifest's notebook array for grounded retrieval.
-2. If the manifest has no relevant sources for the requested lesson, route back to Skill Researcher or run the approved source-discovery wrapper (`scripts/notebooklm/research-sources.mjs`) before writing source-backed content.
+2. If the manifest has no relevant sources for the requested lesson, route back to Skill Researcher before writing source-backed content.
 3. Ask NotebookLM for a compact answer with selected citations; do not pass a long raw NotebookLM answer into the lesson context.
 4. Build or consume a compact retrieval pack containing only the synthesis, selected citations, source IDs, notebook IDs, timestamps/deep links, confidence, and limitations.
-5. Insert citations, timestamps, section/page references, and deep links directly into the HTML lesson where they support substantive claims. For YouTube links, use NotebookLM sources named `<title> [<video-id>]`, subtitle sources ending `.srt.txt`, and chapter sources ending `.chapters.txt`; prefer `scripts/notebooklm/query-video-timestamps.mjs` for timestamp lookup and require subtitle-backed evidence before emitting a timestamp link.
+5. Insert citations, timestamps, section/page references, and deep links directly into the HTML lesson where they support substantive claims. For YouTube links, use NotebookLM sources named `<title> [<video-id>]`, subtitle sources ending `.srt.txt`, and chapter sources ending `.chapters.txt`; prefer `../scripts/notebooklm/query-video-timestamps.mjs` for timestamp lookup and require subtitle-backed evidence before emitting a timestamp link.
 6. Append only citations actually used in the lesson to `citations.jsonl`; keep them normalized and short. Never store raw subtitle text, raw chapter text, raw NotebookLM answers, or downloaded sidecar content in durable state.
 7. Update `teach/RESOURCES.md` with short annotations explaining why each resource is useful, its level, and its learning role.
 8. For large lessons, automatically create 1–2 NotebookLM Studio artifacts by learning role when useful (for example quiz, study guide, flashcards, mind map, infographic, slide deck). Store only artifact metadata/links in the manifest; do not download artifacts by default.
 9. If NotebookLM fails, attempt refresh/reconnect once. If it still fails, ask the user whether to wait/fix NotebookLM, use already saved citations, or stop the source-grounded lesson. Do not silently fall back to uncited parametric explanation.
-10. If a lesson needs a new YouTube source, route it through Skill Researcher or `scripts/notebooklm/add-youtube-with-subs.mjs` so the NotebookLM video title contains `[video-id]` and subtitles/chapters are available as the only approved file sidecar exception.
+10. If a lesson needs a new YouTube source, route it through Skill Researcher so the NotebookLM video title contains `[video-id]` and subtitles/chapters are available as the only approved file sidecar exception.
 
 ### 1. Build / Refresh the teaching workspace
 
@@ -163,7 +163,7 @@ Before finalizing any lesson, verify:
 
 When the learner will study this lesson interactively (not just read):
 
-1. Write the `.lesson.json` to `teach/lessons/` alongside the HTML, with all blocks following the Lesson Workbench schema (`lesson-workbench/types/lesson.ts`).
+1. Write the `.lesson.json` to `teach/lessons/` alongside the HTML, with all blocks following the Lesson Workbench schema (`../lesson-workbench/types/lesson.ts`).
 2. The Workbench server reads `.lesson.json`, renders it as effective-format HTML, and serves it at a local URL.
 3. The learner interacts with the lesson inline: answers recall questions, takes quizzes, rates difficulty, highlights important parts, leaves comments.
 4. All interactions are saved as `lesson-feedback.json` next to the lesson file.
@@ -171,7 +171,7 @@ When the learner will study this lesson interactively (not just read):
 
 To start the Workbench for a lesson:
 ```bash
-bun run lesson-workbench/server/lesson-server.ts \
+bun run ../lesson-workbench/server/lesson-server.ts \
   learn-anything/<skill-slug>/teach/lessons/000N-<dash-case-topic>.lesson.json
 ```
 

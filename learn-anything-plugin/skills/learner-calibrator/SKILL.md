@@ -16,7 +16,7 @@ All state files live in `learn-anything/<skill-slug>/`. Read `learn-anything/act
 Before starting, read:
 1. `learn-anything/<skill-slug>/domain-assessment.json` — The learner profile, especially related experience
 2. `learn-anything/<skill-slug>/skill-dossier.json` — The dependency graph (vertices and edges) and transfer pathways
-3. `schemas/knowledge-graph.schema.json` — The output format
+3. `../schemas/knowledge-graph.schema.json` — The output format
 4. `references/diagnostic-algorithm.md` — The full assessment algorithm and question design principles
 
 ### Input Verification
@@ -124,12 +124,12 @@ If any of these are true, note what additional research is needed. The orchestra
 
 ### Step 7: Produce Output
 
-Write the complete Knowledge Graph as JSON conforming to `schemas/knowledge-graph.schema.json`. Save to `learn-anything/<skill-slug>/knowledge-graph.json`.
+Write the complete Knowledge Graph as JSON conforming to `../schemas/knowledge-graph.schema.json`. Save to `learn-anything/<skill-slug>/knowledge-graph.json`.
 
 ### Validate Output
 
 Before writing the output file, verify:
-1. The JSON conforms to `schemas/knowledge-graph.schema.json` — all required fields present and correctly typed
+1. The JSON conforms to `../schemas/knowledge-graph.schema.json` — all required fields present and correctly typed
 2. All UUID fields are valid v4 UUIDs
 3. All date-time fields are ISO 8601 format
 4. All enum fields use values from the schema's enum lists

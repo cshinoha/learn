@@ -73,7 +73,7 @@ At the start of EVERY session:
    - Extract `comment` and `insert_note` entries → these are learner-initiated questions and suggestions; address them in the session opening
    - Extract `highlight` entries → note which blocks the learner found important (reinforce those concepts)
    - Track processed feedback file paths to avoid reprocessing on subsequent sessions
-7. **Use NotebookLM-backed video timestamps only when needed** — For video evidence or navigation, use NotebookLM sources named `<title> [<video-id>]`, subtitle sidecars ending `.srt.txt`, and chapter sidecars ending `.chapters.txt`. Timestamp links must come from NotebookLM subtitle evidence (prefer `scripts/notebooklm/query-video-timestamps.mjs`); do not query YouTube directly for content or invent timestamps. Raw subtitle/chapter text must never be written into transcripts, manifests, citations, or progress state.
+7. **Use NotebookLM-backed video timestamps only when needed** — For video evidence or navigation, use NotebookLM sources named `<title> [<video-id>]`, subtitle sidecars ending `.srt.txt`, and chapter sidecars ending `.chapters.txt`. Timestamp links must come from NotebookLM subtitle evidence (prefer `../scripts/notebooklm/query-video-timestamps.mjs`); do not query YouTube directly for content or invent timestamps. Raw subtitle/chapter text must never be written into transcripts, manifests, citations, or progress state.
 #### Teaching Preferences
 
 Read `teaching_preferences` from domain-assessment.json:
@@ -242,7 +242,7 @@ Update the Session Metadata with final values:
 ### Validate Output
 
 Before writing the output files, verify:
-1. The JSON conforms to `schemas/progress.schema.json` (and `schemas/knowledge-graph.schema.json` for graph updates) — all required fields present and correctly typed
+1. The JSON conforms to `../schemas/progress.schema.json` (and `../schemas/knowledge-graph.schema.json` for graph updates) — all required fields present and correctly typed
 2. All UUID fields are valid v4 UUIDs
 3. All date-time fields are ISO 8601 format
 4. All enum fields use values from the schema's enum lists

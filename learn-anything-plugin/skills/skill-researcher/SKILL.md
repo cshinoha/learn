@@ -15,7 +15,7 @@ All state files live in `learn-anything/<skill-slug>/`. Read `learn-anything/act
 
 Before starting, read:
 1. `learn-anything/<skill-slug>/domain-assessment.json` — The skill classification and learner profile
-2. `schemas/skill-dossier.schema.json` — The required output format
+2. `../schemas/skill-dossier.schema.json` — The required output format
 3. `references/expert-interview-protocol.md` — The Ferriss interview questions and deconstruction techniques
 
 ### Input Verification
@@ -30,15 +30,15 @@ If any required file is missing or its required fields are absent, report the is
 
 ### NotebookLM RAG / indexed resources
 
-NotebookLM is the required primary path for source-grounded research. The contract is: **links in, compact grounded evidence out; no files in/out**, except the narrow YouTube subtitle/chapter sidecar handled only by `download_yt_subs.sh` through `scripts/notebooklm/add-youtube-with-subs.mjs`.
+NotebookLM is the required primary path for source-grounded research. The contract is: **links in, compact grounded evidence out; no files in/out**, except the narrow YouTube subtitle/chapter sidecar handled only by `download_yt_subs.sh` through `../scripts/notebooklm/add-youtube-with-subs.mjs`.
 
 1. Before deep research, check whether the phase-scoped NotebookLM endpoint is available through `NOTEBOOKLM_MCP_ENDPOINT`. Do not keep NotebookLM enabled outside the research/retrieval phase.
-2. Create or locate a convention-compliant notebook through `scripts/notebooklm/create-notebook.mjs`. Notebook names must follow `LA - <skill-slug> - <skill-id> - <shard>`. New notebooks must be chat-configured immediately to `custom` + `shorter` with concise source-grounded timestamp-aware instructions; creation is incomplete if chat configuration fails.
-3. Use `scripts/notebooklm/research-sources.mjs` for primary source discovery. Run NotebookLM research in `deep` mode for real research (`fast` only for smoke tests), inspect the returned source indices/titles/descriptions, and import only deliberately selected sources. Do not assume low index means high quality. Imported YouTube URLs should be post-processed with `--youtube-subs auto` unless deliberately disabled.
+2. Create or locate a convention-compliant notebook through `../scripts/notebooklm/create-notebook.mjs`. Notebook names must follow `LA - <skill-slug> - <skill-id> - <shard>`. New notebooks must be chat-configured immediately to `custom` + `shorter` with concise source-grounded timestamp-aware instructions; creation is incomplete if chat configuration fails.
+3. Use `../scripts/notebooklm/research-sources.mjs` for primary source discovery. Run NotebookLM research in `deep` mode for real research (`fast` only for smoke tests), inspect the returned source indices/titles/descriptions, and import only deliberately selected sources. Do not assume low index means high quality. Imported YouTube URLs should be post-processed with `--youtube-subs auto` unless deliberately disabled.
 4. Ordinary web search is not a content source. Use it only for URL discovery when NotebookLM source discovery cannot find a required official/creator/resource type, then link/import that URL into NotebookLM before making source-grounded claims.
 5. Add sources to NotebookLM by URL/link only: web URLs, YouTube URLs, Drive/doc links, or other approved provider links. Do not upload files, download source files, stage local files, or pass local paths, except subtitle/chapter files produced by `download_yt_subs.sh` for a YouTube URL already being imported.
 6. Maintain `learn-anything/<skill-slug>/notebooklm-manifest.json` as a write-through metadata mirror after NotebookLM operations. Use failure-only rollover when a shard refuses new links. For YouTube manifest entries, use `resource_id: yt:<video-id>` and title `<original-title> [<video-id>]`; for sidecars use `yt-sub:<video-id>` / `yt-chapters:<video-id>` and titles ending `.srt.txt` / `.chapters.txt`. Never store raw subtitle or chapter text.
-7. For source-grounded deconstruction questions, use RAG-first retrieval across the skill's notebook array. Pass only a compact retrieval pack into the LLM context: short synthesis, selected citations, timestamps/deep links, source IDs, notebook IDs, confidence, and limitations. For video timestamp lookup, use `scripts/notebooklm/query-video-timestamps.mjs`; timestamps must be backed by NotebookLM subtitle sources, not invented or queried directly from YouTube.
+7. For source-grounded deconstruction questions, use RAG-first retrieval across the skill's notebook array. Pass only a compact retrieval pack into the LLM context: short synthesis, selected citations, timestamps/deep links, source IDs, notebook IDs, confidence, and limitations. For video timestamp lookup, use `../scripts/notebooklm/query-video-timestamps.mjs`; timestamps must be backed by NotebookLM subtitle sources, not invented or queried directly from YouTube.
 8. Append detailed citations that were actually used to `learn-anything/<skill-slug>/citations.jsonl`. Store normalized citations only; never store raw NotebookLM blobs, raw answers, full dumps, credentials, downloaded files, or private source text.
 9. In `skill-dossier.json`, keep `research_sources` lightweight: title/link, format, learning role, audience level, one- or two-line annotation, curation status, resource/source/notebook IDs, selection rationale, and citation refs. Do not store large snippets there.
 10. If NotebookLM auth/transport fails, try refresh/reconnect once. If it still fails, ask the user whether to wait/fix NotebookLM, use already saved citations, or stop the source-grounded work. Silent fallback to web-only or uncited knowledge is forbidden.
@@ -188,12 +188,12 @@ From the expert interviews and landscape mapping, catalog:
 
 ### Step 8: Produce Output
 
-Write the complete Skill Research Dossier as JSON conforming to `schemas/skill-dossier.schema.json`. Verify every required field is present. Save to `learn-anything/<skill-slug>/skill-dossier.json`.
+Write the complete Skill Research Dossier as JSON conforming to `../schemas/skill-dossier.schema.json`. Verify every required field is present. Save to `learn-anything/<skill-slug>/skill-dossier.json`.
 
 ### Validate Output
 
 Before writing the output file, verify:
-1. The JSON conforms to `schemas/skill-dossier.schema.json` — all required fields present and correctly typed
+1. The JSON conforms to `../schemas/skill-dossier.schema.json` — all required fields present and correctly typed
 2. All UUID fields are valid v4 UUIDs
 3. All date-time fields are ISO 8601 format
 4. All enum fields use values from the schema's enum lists

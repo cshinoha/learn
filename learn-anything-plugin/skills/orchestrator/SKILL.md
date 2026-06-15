@@ -124,7 +124,7 @@ ELIF user asks for an explanation artifact / "explain the current topic" / "make
 
 ELIF user wants to study an existing lesson interactively / "open the lesson" / "let me work through the lesson" / "I finished the lesson":
   -> ROUTE to Lesson Workbench
-  -> Start the Workbench server: `bun run lesson-workbench/server/lesson-server.ts <path-to-lesson.json>`
+  -> Start the Workbench server: `bun run ../lesson-workbench/server/lesson-server.ts <path-to-lesson.json>`
   -> After the learner finishes (feedback saved), route the `.feedback.json` results to Training Conductor for the next session
 
 ELIF user asks about progress / "show my dashboard" / "how am I doing":
@@ -148,7 +148,7 @@ NotebookLM is required for source-grounded phases, especially Skill Researcher s
 
 - Enable NotebookLM access only phase-scoped for research source discovery, source linking/indexing, RAG-first lesson generation, citation retrieval, and Studio artifact generation.
 - Do not keep NotebookLM enabled during ordinary training/chat turns that do not depend on source evidence.
-- Route Skill Researcher source discovery through `scripts/notebooklm/research-sources.mjs`; it must show candidate source indices/titles/descriptions before selective import.
+- Route Skill Researcher source discovery through `../scripts/notebooklm/research-sources.mjs`; it must show candidate source indices/titles/descriptions before selective import.
 - Know that `notebooklm-manifest.json` and `citations.jsonl` may exist in the active skill workspace and should be preserved on errors.
 - If NotebookLM is unavailable for source-grounded work, follow the fallback policy: refresh/reconnect once, then ask the user whether to wait/fix NotebookLM, use saved citations only, or stop.
 - Never silently fall back from failed NotebookLM discovery/retrieval to ordinary web research or uncited parametric knowledge while presenting the result as grounded.
