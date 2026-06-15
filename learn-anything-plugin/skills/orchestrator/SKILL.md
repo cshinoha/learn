@@ -122,6 +122,11 @@ ELIF user asks for an explanation artifact / "explain the current topic" / "make
   -> ROUTE to Lesson Studio
   -> Then route back to Training Conductor if the request is part of an active session
 
+ELIF user wants to study an existing lesson interactively / "open the lesson" / "let me work through the lesson" / "I finished the lesson":
+  -> ROUTE to Lesson Workbench
+  -> Start the Workbench server: `bun run lesson-workbench/server/lesson-server.ts <path-to-lesson.json>`
+  -> After the learner finishes (feedback saved), route the `.feedback.json` results to Training Conductor for the next session
+
 ELIF user asks about progress / "show my dashboard" / "how am I doing":
   -> ROUTE to Dashboard Generator
 

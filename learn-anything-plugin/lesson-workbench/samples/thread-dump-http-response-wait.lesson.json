@@ -1,0 +1,99 @@
+{
+  "topic": "thread-dump-http-response-wait",
+  "title": "Thread dump → HTTP response wait",
+  "source": "lesson-studio",
+  "created_at": "2026-06-13T00:00:00Z",
+  "blocks": [
+    {
+      "order": 1,
+      "type": "title",
+      "content": "Thread dump → почему это ожидание HTTP response headers"
+    },
+    {
+      "order": 2,
+      "type": "intro",
+      "content": "Цель — читать frames, а не угадывать."
+    },
+    {
+      "order": 3,
+      "type": "explanation",
+      "content": "DefaultHttpResponseParser.parseHead разбирает начало HTTP response: status line и headers.",
+      "citation_refs": ["cit_abc123"]
+    },
+    {
+      "order": 4,
+      "type": "rule",
+      "statement": "Если stack trace дошёл до socketRead0, поток ждёт bytes из сети.",
+      "examples": [
+        "SocketInputStream.socketRead0",
+        "SocketInputStream.read"
+      ]
+    },
+    {
+      "order": 5,
+      "type": "code_trace",
+      "language": "text",
+      "content": "at java.net.SocketInputStream.socketRead0(Native Method)\nat java.net.SocketInputStream.socketRead(SocketInputStream.java:116)\nat java.net.SocketInputStream.read(SocketInputStream.java:170)\nat org.apache.http.impl.conn.DefaultHttpResponseParser.parseHead(DefaultHttpResponseParser.java:141)\nat org.apache.http.impl.conn.DefaultHttpResponseParser.parseHead(DefaultHttpResponseParser.java:56)",
+      "highlights": [
+        { "start": 12, "end": 88, "label": "network-wait", "tone": "danger" },
+        { "start": 224, "end": 338, "label": "http-parser", "tone": "warning" }
+      ]
+    },
+    {
+      "order": 6,
+      "type": "diagram",
+      "title": "Как читать ожидание HTTP response",
+      "nodes": [
+        { "key": "tomcat-thread", "label": "Tomcat request thread", "text": "http-nio-8080-exec-1 обрабатывает входящий HTTP request." },
+        { "key": "socket", "label": "Network socket", "text": "socketRead0 означает ожидание bytes из сети." }
+      ],
+      "edges": [
+        { "from": "tomcat-thread", "to": "socket", "label": "eventually waits at" }
+      ]
+    },
+    {
+      "order": 7,
+      "type": "legend",
+      "items": [
+        { "label": "socketRead0", "meaning": "ждём сеть", "tone": "danger" },
+        { "label": "parseHead/readLine", "meaning": "ждём HTTP response head", "tone": "warning" }
+      ]
+    },
+    {
+      "order": 8,
+      "type": "recall_question",
+      "prompt": "Какой frame показывает ожидание сети?"
+    },
+    {
+      "order": 9,
+      "type": "quiz",
+      "prompt": "Что показывает DefaultHttpResponseParser.parseHead?",
+      "options": [
+        { "key": "a", "text": "Чтение HTTP response head (status line + headers)" },
+        { "key": "b", "text": "Запуск Tomcat thread" },
+        { "key": "c", "text": "Чтение тела HTTP response" },
+        { "key": "d", "text": "Открытие нового сокета" }
+      ]
+    },
+    {
+      "order": 10,
+      "type": "checklist",
+      "items": [
+        "Найти нижний network frame",
+        "Найти HTTP parser frame",
+        "Найти application frame, который вызвал внешний сервис"
+      ]
+    },
+    {
+      "order": 11,
+      "type": "misconception",
+      "claim": "RUNNABLE всегда значит, что поток активно работает на CPU.",
+      "correction": "В thread dump RUNNABLE может включать native socket read wait."
+    },
+    {
+      "order": 12,
+      "type": "free_note",
+      "content": "Если таких traces много, проверяй latency внешнего сервиса и timeouts."
+    }
+  ]
+}

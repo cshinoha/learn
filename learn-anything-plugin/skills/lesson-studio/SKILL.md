@@ -157,6 +157,25 @@ Before finalizing any lesson, verify:
 5. **Practice loop** — the lesson includes at least one action + feedback cycle
 6. **Reference continuity** — terminology matches the glossary/reference set
 7. **Reusability** — the HTML is good enough to re-open later without the chat transcript
+8. **Lesson Workbench compatibility** — if the topic will be used for interactive study, blocks follow the `.lesson.json` schema (order field, typed blocks with canonical text via `toAnnotationText()`)
+
+### Workbench Integration
+
+When the learner will study this lesson interactively (not just read):
+
+1. Write the `.lesson.json` to `teach/lessons/` alongside the HTML, with all blocks following the Lesson Workbench schema (`lesson-workbench/types/lesson.ts`).
+2. The Workbench server reads `.lesson.json`, renders it as effective-format HTML, and serves it at a local URL.
+3. The learner interacts with the lesson inline: answers recall questions, takes quizzes, rates difficulty, highlights important parts, leaves comments.
+4. All interactions are saved as `lesson-feedback.json` next to the lesson file.
+5. Training Conductor reads `lesson-feedback.json` at session start to calibrate difficulty and address the learner's questions.
+
+To start the Workbench for a lesson:
+```bash
+bun run lesson-workbench/server/lesson-server.ts \
+  learn-anything/<skill-slug>/teach/lessons/000N-<dash-case-topic>.lesson.json
+```
+
+The server prints a URL — open it in the learner's browser.
 
 ## Hard Rules
 

@@ -80,7 +80,7 @@ When the user requests a durable behavior change, record it here or in the relev
 
 ## Child DOX Index
 
-- `docs/` — NotebookLM integration plans, smoke workflow/report templates, and operational documentation.
+- `docs/` — NotebookLM integration plans, Lesson Workbench contracts, smoke workflow/report templates, and operational documentation.
 - `scripts/notebooklm/` — Node helpers for NotebookLM MCP transport, notebook creation/configuration, source discovery/import, YouTube subtitle/chapter sidecar handling, timestamp querying, validation, and tests.
 - `schemas/` — JSON schemas for NotebookLM manifests, citations, retrieval packs, and learn-anything state artifacts.
 - `skills/` — Learn-anything component skills and their operating contracts.

@@ -8,3 +8,6 @@ __pycache__/
 
 # OS
 .DS_Store
+
+# Lesson Workbench dependencies (avoid committing docs with false-positive secrets)
+lesson-workbench/node_modules/
