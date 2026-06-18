@@ -66,14 +66,7 @@ At the start of EVERY session:
    - a worked-example drill exists but there is no reusable HTML lesson or quick-reference page for the topic
    - the learner explicitly asks for a lesson, explanation page, or printable reference
    If you invoke Lesson Studio, write `teach/bridge/lesson-request.json` first with the scoped topic, prerequisites, must-cover misconceptions, and desired drill follow-up. After Lesson Studio returns, use its `lesson-result.json` as a session input — but do NOT let it update mastery or progress.
-6. **Check for Lesson Workbench feedback** — Scan `learn-anything/<skill-slug>/teach/lessons/*.feedback.json` for new feedback files. If found:
-   - Extract `difficulty` ratings → adjust starting difficulty zone (average rating < 3 → start easier, > 4 → start at expected level or higher)
-   - Extract `answer` responses from `recall_question` blocks → use as retrieval probe material
-   - Extract `choice` answers from `quiz` blocks → identify which options the learner chose (wrong answers signal misconceptions to address)
-   - Extract `comment` and `insert_note` entries → these are learner-initiated questions and suggestions; address them in the session opening
-   - Extract `highlight` entries → note which blocks the learner found important (reinforce those concepts)
-   - Track processed feedback file paths to avoid reprocessing on subsequent sessions
-7. **Use NotebookLM-backed video timestamps only when needed** — For video evidence or navigation, use NotebookLM sources named `<title> [<video-id>]`, subtitle sidecars ending `.srt.txt`, and chapter sidecars ending `.chapters.txt`. Timestamp links must come from NotebookLM subtitle evidence (prefer `../scripts/notebooklm/query-video-timestamps.mjs`); do not query YouTube directly for content or invent timestamps. Raw subtitle/chapter text must never be written into transcripts, manifests, citations, or progress state.
+6. **Use NotebookLM-backed video timestamps only when needed** — For video evidence or navigation, use NotebookLM sources named `<title> [<video-id>]`, subtitle sidecars ending `.srt.txt`, and chapter sidecars ending `.chapters.txt`. Timestamp links must come from NotebookLM subtitle evidence (prefer `scripts/notebooklm/query-video-timestamps.mjs`); do not query YouTube directly for content or invent timestamps. Raw subtitle/chapter text must never be written into transcripts, manifests, citations, or progress state.
 #### Teaching Preferences
 
 Read `teaching_preferences` from domain-assessment.json:
@@ -169,8 +162,6 @@ When a teach-style lesson exists for the current focus, weave it into the chosen
 
 Read `references/difficulty-calibration.md` for the full framework. In summary:
 
-**Pre-session calibration from Workbench feedback:** If a `.feedback.json` exists for the current lesson, use the average difficulty rating as an initial difficulty signal. Average < 3.0 → start at ZPD-LOWER or reduce scaffolding; average > 4.0 → start at expected ZPD level.
-
 Monitor the rolling 5-question accuracy window plus elaboration depth, error patterns, and engagement signals. Match to the calibration zones:
 - >90% + elaborate responses -> MASTERY: increase difficulty
 - 75-90% + adequate responses -> ZPD-OPTIMAL: maintain
@@ -242,7 +233,7 @@ Update the Session Metadata with final values:
 ### Validate Output
 
 Before writing the output files, verify:
-1. The JSON conforms to `../schemas/progress.schema.json` (and `../schemas/knowledge-graph.schema.json` for graph updates) — all required fields present and correctly typed
+1. The JSON conforms to `schemas/progress.schema.json` (and `schemas/knowledge-graph.schema.json` for graph updates) — all required fields present and correctly typed
 2. All UUID fields are valid v4 UUIDs
 3. All date-time fields are ISO 8601 format
 4. All enum fields use values from the schema's enum lists

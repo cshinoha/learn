@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "NotebookLMCitationRecord",
+  "type": "object",
+  "required": ["citation_id", "used_at", "phase", "notebook_id", "source_id", "source_title", "url", "claim_supported", "locator", "confidence"],
+  "properties": {
+    "citation_id": { "type": "string", "pattern": "^cite-" },
+    "used_at": { "type": "string", "format": "date-time" },
+    "phase": { "type": "string" },
+    "notebook_id": { "type": "string" },
+    "source_id": { "type": "string" },
+    "source_title": { "type": "string" },
+    "url": { "type": "string" },
+    "claim_supported": { "type": "string" },
+    "locator": {
+      "type": "object",
+      "required": ["page", "section", "timestamp"],
+      "properties": {
+        "page": { "type": ["string", "number", "null"] },
+        "section": { "type": ["string", "null"] },
+        "timestamp": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "confidence": { "enum": ["low", "medium", "high"] }
+  },
+  "additionalProperties": false,
+  "description": "Metadata only. Never include raw source text, raw NotebookLM answers, secrets, credentials, cookies, bearer tokens, downloaded files, or local caches."
+}
