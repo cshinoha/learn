@@ -1,11 +1,11 @@
 ---
 name: material-forge
-description: "This skill should be used when the Curriculum Architect has produced a learning plan and learning materials need generating, or on-demand when the Training Conductor needs new materials, or when the user invokes '/materials'. Orchestrates dedicated subagents to generate worked examples with fading, teach-style HTML lessons, visual materials, SRS flashcard decks, assessment instruments, reference one-pagers, dependency graph visualizations, productive failure scenarios, interleaved practice sets, and encoding aids. All outputs conform to the system's JSON schemas and are exportable to Anki (.apkg), PDF, Markdown, and self-contained HTML."
+description: "This skill should be used when the Curriculum Architect has produced a learning plan and learning materials need generating, or on-demand when the Training Conductor needs new materials, or when the user invokes '/materials'. Orchestrates dedicated subagents to generate worked examples with fading, visual materials, SRS flashcard decks, assessment instruments, reference one-pagers, dependency graph visualizations, productive failure scenarios, interleaved practice sets, and encoding aids. All outputs conform to the system's JSON schemas and are exportable to Anki (.apkg), PDF, and Markdown."
 ---
 
 # Material Forge
 
-Act as the production engine of a meta-learning system. Generate all the tangible learning materials: flashcard decks, exercises, reference sheets, assessments, visualizations, and learner-facing lesson artifacts. Quality is make-or-break — bad materials produce bad learning.
+Act as the production engine of a meta-learning system. Generate all the tangible learning materials: flashcard decks, exercises, reference sheets, assessments, and visualizations. Quality is make-or-break — bad materials produce bad learning.
 
 ## Workspace
 
@@ -16,7 +16,7 @@ All state files live in `learn-anything/<skill-slug>/`. Read `learn-anything/act
 Before starting, read:
 1. `learn-anything/<skill-slug>/learning-plan.json` — The curriculum: task classes, sequences, session templates, SRS schedule
 2. `learn-anything/<skill-slug>/knowledge-graph.json` — The skill graph with learner overlay (for difficulty calibration and transfer-leveraged analogies)
-3. `../schemas/srs-cards.schema.json` — Flashcard output format
+3. `schemas/srs-cards.schema.json` — Flashcard output format
 4. `references/card-design-guide.md` — Card design principles and anti-patterns
 5. `references/quality-rubrics.md` — Quality checks for all material types
 6. `../training-conductor/references/session-templates.md` — Session templates (for designing template-aligned materials)
@@ -47,8 +47,7 @@ Material Forge acts as an orchestrator, dispatching dedicated subagents for each
 1. Read the learning plan and knowledge graph
 2. For each task class, determine which material types are needed
 3. Dispatch subagents in priority order (most important first):
-   - **worked-example-generator** — Worked examples with backward fading and detailed visuals (the pedagogical backbone for lessons and drills)
-   - **lesson-studio** — Teach-style self-contained HTML lessons, glossary updates, and quick-reference pages for learner-facing use
+   - **worked-example-generator** — Worked examples with backward fading and detailed visuals (highest priority — these ARE the lessons)
    - **visual-material-generator** — Concept illustrations, process diagrams, reference visuals
    - **assessment-generator** — Mastery gate items, delayed retention tests, transfer tasks
    - **flashcard-generator** — SRS cards per card-design-guide.md
@@ -141,31 +140,6 @@ Adjust fading pace to learner level (from knowledge graph): novice = 1 step per 
 
 Vary surface features across versions (different numbers, scenarios, contexts) while keeping the deep structure identical.
 
-### 2b. Teach-style HTML Lesson Layer
-
-For each task class that needs a learner-facing explanation artifact, create a teach-style lesson package under `learn-anything/<skill-slug>/teach/`.
-
-1. Create or update `teach/bridge/lesson-request.json` with:
-   - topic / task-class scope
-   - learner goal and identity framing
-   - must-cover misconceptions, prerequisites, and transfer targets
-   - references to the relevant worked-example materials
-2. Use **Lesson Studio** to turn the worked-example backbone into a self-contained HTML lesson that:
-   - teaches one tightly-scoped thing only
-   - is beautiful and easy to revisit later
-   - is explicitly tied to the learner's mission
-   - includes citations / trusted links
-   - contains a short practice loop with immediate feedback
-   - links to glossary and reference artifacts
-3. Generate or refresh companion artifacts:
-   - `teach/reference/*.html` quick-reference pages
-   - `teach/GLOSSARY.md`
-   - `teach/RESOURCES.md`
-4. Keep authority boundaries clean:
-   - Lesson Studio creates explanation artifacts only
-   - Material Forge and Training Conductor remain responsible for deciding what is needed
-   - Training Conductor remains the only owner of progress/mastery updates
-
 ### 3. Productive Failure Scenarios
 
 For each productive failure point flagged in the learning plan:
@@ -207,19 +181,24 @@ For each session that includes interleaving:
 Generate as Markdown files. If PDF export is needed, use the pdf skill.
 
 **External resource list** — Curated recommendations:
-- Best books/courses for self-teaching (from the Researcher's NotebookLM-grounded findings)
-- Video resources for visual/motor learning
-- Community links (forums, Discord, subreddits)
-- Tool recommendations
-- NotebookLM-indexed resources from `skill-dossier.research_sources`, `notebooklm-manifest.json`, and `citations.jsonl` pointers
+- Best books/courses for self-teaching from the Researcher's NotebookLM-grounded findings.
+- Video resources for visual/motor learning.
+- Community links.
+- Tool recommendations.
+- NotebookLM-indexed resources from:
+  - `skill-dossier.research_sources`
+  - `notebooklm-manifest.json`
+  - `citations.jsonl`
 
 NotebookLM resource rules:
-- For source-grounded resource recommendations, NotebookLM-indexed sources are required. If relevant sources are missing, route back to Skill Researcher/source discovery rather than inventing a web-only list.
-- Treat NotebookLM Studio artifacts as optional learning materials when manifest metadata says they exist, but do not download artifact files by default.
-- Show concise annotations for external resources: why open it, audience level, learning role, and source selection rationale.
-- For visual topics, prefer linked `infographic` or `mind_map` artifacts when NotebookLM created them.
-- Keep resource lists metadata-only; do not paste large snippets, raw NotebookLM answers, raw dumps, or copied source text.
-- On NotebookLM failure, refresh/reconnect once. If it still fails, ask the user whether to wait/fix NotebookLM, use saved citations only, or stop the source-grounded resource work; do not silently substitute ordinary web research.
+- For source-grounded resource recommendations, NotebookLM-indexed sources are required.
+- If relevant sources are missing, route back to Skill Researcher/source discovery.
+- Treat NotebookLM Studio artifacts as optional learning materials when manifest metadata says they exist.
+- Do not download artifact files by default.
+- Show concise annotations: why open it, audience level, learning role, and source selection rationale.
+- Keep resource lists metadata-only.
+- Do not paste large snippets, raw NotebookLM answers, raw dumps, copied source text, or private source content.
+- On NotebookLM failure, refresh/reconnect once. If it still fails, ask whether to fix NotebookLM, use saved citations only, or stop source-grounded resource work.
 
 ### 6. Dependency Graph Visualization
 
@@ -290,7 +269,7 @@ For SRS cards specifically, also verify:
 ### Validate Output
 
 Before writing the output file, verify:
-1. The JSON conforms to `../schemas/srs-cards.schema.json` — all required fields present and correctly typed
+1. The JSON conforms to `schemas/srs-cards.schema.json` — all required fields present and correctly typed
 2. All UUID fields are valid v4 UUIDs
 3. All date-time fields are ISO 8601 format
 4. All enum fields use values from the schema's enum lists
@@ -310,13 +289,6 @@ Save all materials to the skill workspace (`learn-anything/<skill-slug>/`):
   - Assessment instruments (JSON)
   - Dependency graph visualization (Mermaid in Markdown)
   - Resource list (Markdown)
-- `teach/` directory with learner-facing artifacts:
-  - `lessons/*.html`
-  - `reference/*.html`
-  - `MISSION.md`
-  - `GLOSSARY.md`
-  - `RESOURCES.md`
-  - `bridge/lesson-result.json`
 
 Present a summary to the learner:
 1. What was generated (card counts, material types)

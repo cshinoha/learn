@@ -119,23 +119,13 @@
 
     "research_sources": {
       "type": "array",
-      "description": "Lightweight source catalog for research and NotebookLM-linked resources. Keep this metadata-only: no large snippets, raw NotebookLM blobs, full MCP dumps, downloaded files, credentials, or private source text. Detailed used citations belong in citations.jsonl.",
       "items": {
         "type": "object",
         "properties": {
-          "type": { "type": "string", "enum": ["expert_interview", "curriculum", "textbook", "research_paper", "course", "web_resource", "notebooklm_source", "artifact"] },
+          "type": { "type": "string", "enum": ["expert_interview", "curriculum", "textbook", "research_paper", "course", "web_resource"] },
           "title": { "type": "string" },
           "url": { "type": "string" },
-          "notes": { "type": "string" },
-          "format": { "type": "string", "enum": ["article", "book", "paper", "course", "docs", "video", "slides", "diagram", "infographic", "interactive", "audio", "community", "tool", "other"] },
-          "learning_role": { "type": "string", "enum": ["explanation", "visualization", "demonstration", "practice", "reference", "motivation", "source_evidence", "assessment", "community", "other"] },
-          "audience_level": { "type": "string", "enum": ["beginner", "intermediate", "advanced", "mixed", "unknown"] },
-          "annotation": { "type": "string", "maxLength": 500, "description": "One or two short lines explaining why this source is useful." },
-          "curation_status": { "type": "string", "enum": ["candidate", "curated", "linked", "indexed", "rejected", "stale"] },
-          "resource_id": { "type": "string" },
-          "notebook_id": { "type": "string" },
-          "source_id": { "type": "string" },
-          "citation_refs": { "type": "array", "items": { "type": "string" } }
+          "notes": { "type": "string" }
         }
       }
     },

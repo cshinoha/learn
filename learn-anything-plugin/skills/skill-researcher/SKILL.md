@@ -1,6 +1,6 @@
 ---
 name: skill-researcher
-description: "This skill should be used when the user's learning goal has been classified by the Domain Assessor and needs deep investigation. Performs skill deconstruction into components, dependency graph construction, frequency/impact analysis, transfer pathway identification, failure point cataloging, and expert panel discovery. Uses NotebookLM source discovery and RAG-first retrieval to ground decomposition in real expert perspectives; ordinary web search is only a URL-discovery fallback. Output is a Skill Research Dossier conforming to skill-dossier.schema.json."
+description: "This skill should be used when the user's learning goal has been classified by the Domain Assessor and needs deep investigation. Performs skill deconstruction into components, dependency graph construction, frequency/impact analysis, transfer pathway identification, failure point cataloging, and expert panel discovery. Uses NotebookLM source discovery and RAG-first retrieval to ground decomposition in imported/indexed sources. Ordinary web search is only a URL-discovery fallback. Output is a Skill Research Dossier conforming to skill-dossier.schema.json."
 ---
 
 # Skill Researcher
@@ -15,8 +15,10 @@ All state files live in `learn-anything/<skill-slug>/`. Read `learn-anything/act
 
 Before starting, read:
 1. `learn-anything/<skill-slug>/domain-assessment.json` — The skill classification and learner profile
-2. `../schemas/skill-dossier.schema.json` — The required output format
+2. `schemas/skill-dossier.schema.json` — The required output format
 3. `references/expert-interview-protocol.md` — The Ferriss interview questions and deconstruction techniques
+4. `learn-anything/<skill-slug>/notebooklm-manifest.json` — optional existing NotebookLM metadata mirror
+5. `learn-anything/<skill-slug>/citations.jsonl` — optional citation ledger for previously used sources
 
 ### Input Verification
 
@@ -30,56 +32,68 @@ If any required file is missing or its required fields are absent, report the is
 
 ### NotebookLM RAG / indexed resources
 
-NotebookLM is the required primary path for source-grounded research. The contract is: **links in, compact grounded evidence out; no files in/out**, except the narrow YouTube subtitle/chapter sidecar handled only by `download_yt_subs.sh` through `../scripts/notebooklm/add-youtube-with-subs.mjs`.
+NotebookLM is the required primary path for source-grounded research.
 
-1. Before deep research, check whether the phase-scoped NotebookLM endpoint is available through `NOTEBOOKLM_MCP_ENDPOINT`. Do not keep NotebookLM enabled outside the research/retrieval phase.
-2. Create or locate a convention-compliant notebook through `../scripts/notebooklm/create-notebook.mjs`. Notebook names must follow `LA - <skill-slug> - <skill-id> - <shard>`. New notebooks must be chat-configured immediately to `custom` + `shorter` with concise source-grounded timestamp-aware instructions; creation is incomplete if chat configuration fails.
-3. Use `../scripts/notebooklm/research-sources.mjs` for primary source discovery. Run NotebookLM research in `deep` mode for real research (`fast` only for smoke tests), inspect the returned source indices/titles/descriptions, and import only deliberately selected sources. Do not assume low index means high quality. Imported YouTube URLs should be post-processed with `--youtube-subs auto` unless deliberately disabled.
-4. Ordinary web search is not a content source. Use it only for URL discovery when NotebookLM source discovery cannot find a required official/creator/resource type, then link/import that URL into NotebookLM before making source-grounded claims.
-5. Add sources to NotebookLM by URL/link only: web URLs, YouTube URLs, Drive/doc links, or other approved provider links. Do not upload files, download source files, stage local files, or pass local paths, except subtitle/chapter files produced by `download_yt_subs.sh` for a YouTube URL already being imported.
-6. Maintain `learn-anything/<skill-slug>/notebooklm-manifest.json` as a write-through metadata mirror after NotebookLM operations. Use failure-only rollover when a shard refuses new links. For YouTube manifest entries, use `resource_id: yt:<video-id>` and title `<original-title> [<video-id>]`; for sidecars use `yt-sub:<video-id>` / `yt-chapters:<video-id>` and titles ending `.srt.txt` / `.chapters.txt`. Never store raw subtitle or chapter text.
-7. For source-grounded deconstruction questions, use RAG-first retrieval across the skill's notebook array. Pass only a compact retrieval pack into the LLM context: short synthesis, selected citations, timestamps/deep links, source IDs, notebook IDs, confidence, and limitations. For video timestamp lookup, use `../scripts/notebooklm/query-video-timestamps.mjs`; timestamps must be backed by NotebookLM subtitle sources, not invented or queried directly from YouTube.
-8. Append detailed citations that were actually used to `learn-anything/<skill-slug>/citations.jsonl`. Store normalized citations only; never store raw NotebookLM blobs, raw answers, full dumps, credentials, downloaded files, or private source text.
-9. In `skill-dossier.json`, keep `research_sources` lightweight: title/link, format, learning role, audience level, one- or two-line annotation, curation status, resource/source/notebook IDs, selection rationale, and citation refs. Do not store large snippets there.
-10. If NotebookLM auth/transport fails, try refresh/reconnect once. If it still fails, ask the user whether to wait/fix NotebookLM, use already saved citations, or stop the source-grounded work. Silent fallback to web-only or uncited knowledge is forbidden.
+Contract:
+- links in;
+- compact grounded evidence out;
+- no raw source dumps in durable state.
+
+Process:
+1. Check whether `NOTEBOOKLM_MCP_ENDPOINT` is available.
+2. Create or locate a convention-compliant notebook through `../scripts/notebooklm/create-notebook.mjs`.
+3. Notebook names must follow `LA - <skill-slug> - <skill-id> - <shard>`.
+4. Configure new notebooks immediately to custom + shorter chat responses.
+5. Use `../scripts/notebooklm/research-sources.mjs` for primary source discovery.
+6. Use `--mode deep` for real research. Use `--mode fast` only for smoke tests.
+7. Inspect returned source indices, titles, URLs, and descriptions before importing.
+8. Import only deliberately selected sources; do not assume low source index means high quality.
+9. For imported YouTube URLs, use `--youtube-subs auto` unless deliberately disabled.
+10. Ordinary web search may be used only to discover a missing official/creator URL.
+11. Import/link that URL into NotebookLM before using it as evidence.
+12. Maintain `learn-anything/<skill-slug>/notebooklm-manifest.json` as a metadata mirror.
+13. Append normalized citations actually used to `learn-anything/<skill-slug>/citations.jsonl`.
+14. In `skill-dossier.json`, keep `research_sources` lightweight: title/link, format, learning role, audience level, short annotation, source id/notebook id, and citation ids.
+
+Durable state must not store raw NotebookLM answers, raw source text, full MCP dumps, credentials, downloaded subtitle files, or local retrieval caches.
+
+If NotebookLM auth/transport fails, refresh/reconnect once. If it still fails, stop and ask whether to fix NotebookLM, use saved citations only, or stop source-grounded work.
 
 ### Step 1: Landscape Mapping
 
-Use NotebookLM source discovery to survey the territory. Run focused `research-sources.mjs` queries for:
+Use NotebookLM source discovery and RAG-first retrieval to survey the territory. Search/import:
 - Existing curricula for this skill (university courses, online courses, textbook table of contents)
 - Major "schools of thought" or pedagogical approaches
 - Expert discussions about how the skill breaks down
 - Controversies or disagreements among practitioners
 
-Spend 3-6 NotebookLM source-discovery queries here. Inspect source titles, URLs, and descriptions before importing. Select sources for coverage, authority, recency, creator/official status, and learning role; record why each selected source was kept. Look for structural information, not just content — how do experts organize this domain?
+Run 3-6 focused NotebookLM source-discovery/retrieval passes here. Look for structural information, not just content — how do experts organize this domain?
 
 #### Freshness Assessment
 
 Assess field velocity during landscape mapping:
 - Check for: release cadence, recent major version changes, active development blogs/changelogs, version numbers, "what's new" pages
 - If the field has had significant changes within the last 6 months, flag as `HIGH_FRESHNESS_RISK` or `VERY_HIGH_FRESHNESS_RISK`
-- For HIGH or VERY_HIGH freshness risk: double the NotebookLM source-discovery query budget, prioritize official documentation and creator content (blog posts, tutorials, changelogs, release notes) over general articles
-- For technical/product skills: always use NotebookLM discovery to seek official documentation, creator blogs, tutorials from the tool's authors, and recent conference talks — these are higher-signal than third-party articles for rapidly evolving tools
-
-If NotebookLM discovery cannot surface an expected official or creator source, ordinary web search may be used only to discover the URL. Import/link the URL into NotebookLM before using it as evidence.
+- For HIGH or VERY_HIGH freshness risk: double the NotebookLM source-discovery/retrieval budget, prioritize official documentation and creator content (blog posts, tutorials, changelogs, release notes) over general articles
+- For technical/product skills: always discover/import official documentation, creator blogs, tutorials from the tool's authors, and recent conference talks — these are higher-signal than third-party articles for rapidly evolving tools
 
 Record the assessment in the dossier output as `freshness_assessment`.
 
 #### Creator Content Priority
 
-For technical/product skills, prioritize official documentation, creator blogs, tutorials from the tool's authors, and recent conference talks discovered through NotebookLM. These are higher-signal than third-party articles for rapidly evolving tools. Prioritize these over general "how to learn X" articles.
+For technical/product skills, discover/import official documentation, creator blogs, tutorials from the tool's authors, and recent conference talks. These are higher-signal than third-party articles for rapidly evolving tools. Prioritize these over general "how to learn X" articles.
 
-### Step 2: Expert Interview Synthesis (REQUIRED — 6-12 NotebookLM discovery queries)
+### Step 2: Expert Interview Synthesis (REQUIRED — 6-12 NotebookLM retrieval/source-discovery passes)
 
-Read `references/expert-interview-protocol.md` before proceeding. This step is mandatory — execute ALL six Ferriss questions using the query patterns documented there.
+Read `references/expert-interview-protocol.md` before proceeding. This step is mandatory — execute ALL six Ferriss questions using the search strategies documented there.
 
 For each of the 6 Ferriss questions:
-1. Run at least one NotebookLM source-discovery query using the patterns from the protocol
-2. Inspect candidate source titles/descriptions before import; keep only sources with clear relevance, authority, and complementary coverage
-3. Document findings with source URLs and selection rationale after the sources are imported/indexed
-4. Synthesize across perspectives — where experts agree, note consensus; where they disagree, note the controversy
+1. Conduct at least one NotebookLM retrieval/source-discovery pass using the search patterns from the protocol.
+2. If a needed URL is missing, use ordinary web search only to discover it, then import/link it into NotebookLM before using it as evidence.
+3. Document findings with source URLs, notebook/source IDs, and citation IDs for used evidence.
+4. Synthesize across perspectives — where experts agree, note consensus; where they disagree, note the controversy.
 
-If a question produces zero findings after two NotebookLM source-discovery attempts, note it explicitly with `confidence: LOW` and record what was searched. Ordinary web search may be used only to discover a missing URL, which must then be imported into NotebookLM before being used as evidence.
+If a question produces zero findings after two NotebookLM attempts, note it explicitly with `confidence: LOW` and record what was searched.
 
 #### Expert Panel Discovery
 
@@ -91,14 +105,14 @@ During interview synthesis, identify masters of the field — people who have dr
 
 Store these in the `expert_panel` array in the dossier output. The Curriculum Architect will present these to the learner as potential instructor personas.
 
-Use NotebookLM source-discovery queries such as: "[field] greatest teachers", "[field] best instructors", "[field] pioneers", "[field] thought leaders". If the domain is too niche for recognizable teaching personas, note this — the downstream skill will fall back to asking the learner directly.
+Use NotebookLM source discovery for: "[field] greatest teachers", "[field] best instructors", "[field] pioneers", "[field] thought leaders". If the domain is too niche for recognizable teaching personas, note this — the downstream skill will fall back to asking the learner directly.
 
 ### Step 2 Validation Checkpoint
 
 Before proceeding to component identification:
 - Verify all 6 Ferriss questions produced at least one finding with a source URL
 - Verify `research_sources` will include at least 3 entries with `type: "expert_interview"`
-- If fewer than 3 expert_interview sources exist, the research phase is incomplete — conduct additional targeted NotebookLM source-discovery queries
+- If fewer than 3 expert_interview sources exist, the research phase is incomplete — conduct additional targeted searches
 
 This checkpoint exists because the Ferriss interview protocol is frequently skipped, leading to decompositions that reflect LLM training data rather than real expert perspectives.
 
@@ -188,12 +202,12 @@ From the expert interviews and landscape mapping, catalog:
 
 ### Step 8: Produce Output
 
-Write the complete Skill Research Dossier as JSON conforming to `../schemas/skill-dossier.schema.json`. Verify every required field is present. Save to `learn-anything/<skill-slug>/skill-dossier.json`.
+Write the complete Skill Research Dossier as JSON conforming to `schemas/skill-dossier.schema.json`. Verify every required field is present. Save to `learn-anything/<skill-slug>/skill-dossier.json`.
 
 ### Validate Output
 
 Before writing the output file, verify:
-1. The JSON conforms to `../schemas/skill-dossier.schema.json` — all required fields present and correctly typed
+1. The JSON conforms to `schemas/skill-dossier.schema.json` — all required fields present and correctly typed
 2. All UUID fields are valid v4 UUIDs
 3. All date-time fields are ISO 8601 format
 4. All enum fields use values from the schema's enum lists
@@ -210,12 +224,13 @@ Present a conversational summary to the learner covering:
 
 ## Key Rules
 
-- **Ground everything in NotebookLM-indexed evidence.** The decomposition should reflect how real experts and real curricula structure this skill, not just LLM general knowledge. Every major structural decision should be traceable to at least one imported NotebookLM source and normalized citation; ordinary web search is only a URL-discovery fallback.
+- **Ground everything in NotebookLM-indexed sources.** The decomposition should reflect how real experts and real curricula structure this skill, not just LLM general knowledge. Every major structural decision should be traceable to at least one imported/indexed source and, when used, a citation record.
+- **Never silently fall back.** Ordinary web search is only URL discovery. Do not present web-only or parametric answers as source-grounded NotebookLM evidence.
 - **Flag confidence honestly.** HIGH = supported by multiple expert sources and verified against existing curricula. MEDIUM = supported by general domain knowledge but not specifically validated. LOW = plausible but potentially confabulated — needs verification.
 - **Don't over-decompose.** A 25-component graph for "learn basic Python" is better than a 100-component graph. The Curriculum Architect will focus on a subset anyway. Err toward components that are independently assessable and meaningfully distinct.
 - **Transfer pathways are a first-class output.** The learner profile exists specifically to identify where existing knowledge accelerates learning. Do not skip this step.
 - **The graph structure matters more than individual descriptions.** Getting the prerequisite relationships right is more important than having perfect descriptions. An incorrect prerequisite edge will cause the Curriculum Architect to sequence things wrong.
-- **Research sources must be recorded.** Include the URLs and types of sources consulted. This enables future expert validation and shows the learner what the decomposition is based on.
+- **Research sources must be recorded.** Include URLs, source types, notebook/source IDs, and citation IDs for used evidence. This enables future expert validation and shows the learner what the decomposition is based on without storing raw source text.
 
 ## Update Mode
 
@@ -223,7 +238,7 @@ When invoked for a curriculum update (not initial research), follow a modified p
 
 1. Read the existing `skill-dossier.json` first
 2. Read the update directive (what changed, from the user or the `/update` command)
-3. Conduct targeted NotebookLM source discovery and RAG-first retrieval focused on the changes described
+3. Conduct targeted NotebookLM source discovery and RAG-first retrieval focused on the changes described. Ordinary web search is only URL discovery and cannot be used directly as evidence.
 4. Compare findings against the existing graph:
    - **New components:** Add as new vertices with appropriate edges. Use new unique IDs — do not reuse existing vertex IDs.
    - **Changed components:** Update existing vertex descriptions, scores, and connections. Preserve the vertex ID.

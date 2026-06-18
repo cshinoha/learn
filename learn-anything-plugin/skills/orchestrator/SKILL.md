@@ -5,7 +5,7 @@ description: "The entry point and router for the meta-learning plugin system. Us
 
 # Meta-Learning Orchestrator
 
-Act as the central coordinator of a meta-learning plugin system that helps people learn any skill efficiently. Route between eight component skills, manage persistent state, and ensure the pipeline flows smoothly from initial goal-setting through ongoing training.
+Act as the central coordinator of a meta-learning plugin system that helps people learn any skill efficiently. Route between seven component skills, manage persistent state, and ensure the pipeline flows smoothly from initial goal-setting through ongoing training.
 
 ## System Components
 
@@ -15,8 +15,7 @@ Act as the central coordinator of a meta-learning plugin system that helps peopl
 4. **Curriculum Architect** (skill: `curriculum-architect`) — Learning plan design from gap analysis
 5. **Material Forge** (skill: `material-forge`) — Generates all learning materials and exports
 6. **Training Conductor** (skill: `training-conductor`) — Session-by-session teaching and assessment
-7. **Lesson Studio** (skill: `lesson-studio`) — Teach-style HTML lessons, reference pages, glossary updates, mission-grounded explanation artifacts
-8. **Dashboard Generator** (skill: `dashboard-generator`) — Visual progress artifact
+7. **Dashboard Generator** (skill: `dashboard-generator`) — Visual progress artifact
 
 ## References
 
@@ -35,17 +34,10 @@ learn-anything/
 │   ├── knowledge-graph.json
 │   ├── learning-plan.json
 │   ├── srs-cards.json
-│   ├── notebooklm-manifest.json  ← NotebookLM metadata mirror for source-grounded work
-│   ├── citations.jsonl           ← Normalized used citations for source-grounded work
+│   ├── notebooklm-manifest.json
+│   ├── citations.jsonl
 │   ├── progress.json
 │   ├── materials/
-│   ├── teach/
-│   │   ├── MISSION.md
-│   │   ├── GLOSSARY.md
-│   │   ├── RESOURCES.md
-│   │   ├── lessons/
-│   │   ├── reference/
-│   │   └── bridge/
 │   └── external-imports/
 └── classical-guitar/
     └── (same structure)
@@ -73,8 +65,8 @@ These JSON files in the active skill workspace are the system's persistent state
 | `learn-anything/<slug>/knowledge-graph.json` | Learner Calibrator | Learner assessed, gap map ready |
 | `learn-anything/<slug>/learning-plan.json` | Curriculum Architect | Curriculum designed, schedule set |
 | `learn-anything/<slug>/srs-cards.json` | Material Forge | Flashcards generated |
-| `learn-anything/<slug>/notebooklm-manifest.json` | Skill Researcher / Lesson Studio | NotebookLM notebook/source/artifact metadata mirror for source-grounded work |
-| `learn-anything/<slug>/citations.jsonl` | Skill Researcher / Lesson Studio / Training Conductor | Normalized ledger of citations actually used in source-grounded work |
+| `learn-anything/<slug>/notebooklm-manifest.json` | Skill Researcher | NotebookLM notebook/source/artifact metadata mirror |
+| `learn-anything/<slug>/citations.jsonl` | Skill Researcher / Training Conductor | Normalized ledger of citations actually used in source-grounded work |
 | `learn-anything/<slug>/progress.json` | Training Conductor | Training in progress |
 | `learn-anything/<slug>/external-imports/` | User/external tools | Data waiting to be processed |
 
@@ -116,16 +108,6 @@ ELIF learn-anything/<slug>/srs-cards.json does NOT exist:
 
 ELIF user wants a training session OR says "let's learn" / "continue" / "next session":
   -> ROUTE to Training Conductor
-  -> Training Conductor may invoke Lesson Studio if the session needs a learner-facing HTML lesson or refreshed reference artifact
-
-ELIF user asks for an explanation artifact / "explain the current topic" / "make me a lesson" / "generate a reference page":
-  -> ROUTE to Lesson Studio
-  -> Then route back to Training Conductor if the request is part of an active session
-
-ELIF user wants to study an existing lesson interactively / "open the lesson" / "let me work through the lesson" / "I finished the lesson":
-  -> ROUTE to Lesson Workbench
-  -> Start the Workbench server: `bun run ../lesson-workbench/server/lesson-server.ts <path-to-lesson.json>`
-  -> After the learner finishes (feedback saved), route the `.feedback.json` results to Training Conductor for the next session
 
 ELIF user asks about progress / "show my dashboard" / "how am I doing":
   -> ROUTE to Dashboard Generator
@@ -144,14 +126,18 @@ ELIF Training Conductor signals re-calibration needed:
 
 ### NotebookLM routing notes
 
-NotebookLM is required for source-grounded phases, especially Skill Researcher source discovery and RAG-first lesson/material generation. The orchestrator does not decide pedagogy for downstream skills; it routes phases, tracks readiness, and enforces fallback boundaries.
+NotebookLM is infrastructure/source layer, not an eighth component. It is required for source-grounded phases, especially Skill Researcher source discovery and RAG-first retrieval.
 
-- Enable NotebookLM access only phase-scoped for research source discovery, source linking/indexing, RAG-first lesson generation, citation retrieval, and Studio artifact generation.
-- Do not keep NotebookLM enabled during ordinary training/chat turns that do not depend on source evidence.
-- Route Skill Researcher source discovery through `../scripts/notebooklm/research-sources.mjs`; it must show candidate source indices/titles/descriptions before selective import.
-- Know that `notebooklm-manifest.json` and `citations.jsonl` may exist in the active skill workspace and should be preserved on errors.
-- If NotebookLM is unavailable for source-grounded work, follow the fallback policy: refresh/reconnect once, then ask the user whether to wait/fix NotebookLM, use saved citations only, or stop.
-- Never silently fall back from failed NotebookLM discovery/retrieval to ordinary web research or uncited parametric knowledge while presenting the result as grounded.
+Rules:
+- Enable NotebookLM access only during phase-scoped source discovery, source linking/indexing, retrieval, citation lookup, and timestamp lookup.
+- Do not keep NotebookLM enabled during ordinary coaching/chat turns that do not depend on source evidence.
+- Route Skill Researcher source discovery through `../scripts/notebooklm/research-sources.mjs`.
+- Ordinary web search is only a URL-discovery fallback. If a URL is found through web search, import it into NotebookLM before treating it as evidence.
+- Maintain `notebooklm-manifest.json` as metadata only.
+- Append only citations actually used to `citations.jsonl`.
+- Do not store raw NotebookLM answers, raw source text, full MCP dumps, credentials, downloaded files, or local retrieval caches in durable state.
+- If NotebookLM auth/transport fails, refresh/reconnect once. If it still fails, ask the user whether to fix NotebookLM, use saved citations only, or stop source-grounded work.
+- Never silently fall back from failed NotebookLM retrieval to ordinary web research or uncited parametric knowledge while presenting the result as grounded.
 
 ### Calibration Loop
 
@@ -169,8 +155,8 @@ Maximum loop iterations: 2 (prevent infinite research cycles).
 If any component fails or produces invalid output:
 1. Preserve all existing state files (never delete working state on error)
 2. Attempt the component again with the same inputs
-3. If it fails twice: fall back to a simplified version only where the fallback does not violate source-grounding requirements
-   - Researcher fallback: stop and ask the user. If the user explicitly approves an ungrounded sketch, label it preliminary and do not present it as source-grounded.
+3. If it fails twice: stop before source-grounded work is presented as grounded
+   - Researcher fallback requires user choice: fix NotebookLM, use saved citations only, or continue explicitly ungrounded
    - Calibrator fallback: use the learner profile's self-reported experience as the overlay
    - Architect fallback: linear sequencing of priority gaps
    - Forge fallback: generate basic flashcards only
@@ -198,7 +184,7 @@ The typical onboarding spans 1-2 conversations:
 **Conversation 1 — Assessment & Research:**
 1. Greet the learner. Ask what they want to learn.
 2. Route to Domain Assessor -> runs the classification and profile conversation
-3. Route to Skill Researcher -> deep investigation (this runs largely autonomously with NotebookLM source discovery and RAG-first retrieval, then presents findings to the learner for validation)
+3. Route to Skill Researcher -> deep investigation (this runs through NotebookLM-first source discovery/retrieval, with web search only for URL discovery, then presents findings to the learner for validation)
 4. Close conversation 1 with: "I've got a great picture of [skill] and your starting point. In our next conversation, I'll assess your current knowledge and build your plan."
 
 **Conversation 2 — Calibration, Plan, Materials:**
@@ -210,29 +196,25 @@ The typical onboarding spans 1-2 conversations:
 10. Present the complete package: plan, schedule, Anki deck, reference materials, dashboard
 11. Transition to LEARNING phase: "Ready for your first session? Or take some time to review everything and start tomorrow."
 
-**Why two conversations?** The research step benefits from NotebookLM source discovery, selective import, and grounded retrieval, which can take time. Splitting lets the learner absorb the assessment results before diving into calibration. However, if the learner wants to do everything in one sitting, that's fine — just manage token budget carefully.
+**Why two conversations?** The research step benefits from NotebookLM source discovery/retrieval which can take time. Splitting lets the learner absorb the assessment results before diving into calibration. However, if the learner wants to do everything in one sitting, that's fine — just manage token budget carefully.
 
 ## Ongoing Training Flow
 
 Once in the LEARNING phase:
 
 1. Each time the learner starts a conversation that looks like a training session, route to the Training Conductor.
-2. The Conductor reads state, decides whether a teach-style lesson artifact is needed, and invokes Lesson Studio when appropriate.
-3. Lesson Studio writes learner-facing HTML artifacts under `teach/` but does NOT update mastery or progress.
-4. The Conductor runs the session and remains the sole writer of `progress.json` and in-session mastery updates.
-5. After the session, offer to update the dashboard: "Want to see your updated progress map?"
-6. If the Conductor flags upstream feedback needs, route to the appropriate component:
+2. The Conductor reads state, runs the session, writes updated state.
+3. After the session, offer to update the dashboard: "Want to see your updated progress map?"
+4. If the Conductor flags upstream feedback needs, route to the appropriate component:
    - **Re-research needed** (new concepts discovered, field evolved) → Skill Researcher in update mode
    - **Re-calibration needed** (mastery estimates drifted, significant external learning reported) → Learner Calibrator for targeted re-assessment of affected vertices
    - **Re-sequencing needed** (prerequisite gaps or consistent pacing mismatch across 3+ sessions) → Curriculum Architect in update mode
    - **Materials needed** (exhausted or wrong format) → Material Forge via on-demand mode or `/materials`
-   - **Explanation artifact needed** (new topic, re-teach, or reference gap) → Lesson Studio
    - **Plateau detected** → Check plateau protocols in the learning plan; if protocols exhausted, consider re-sequencing
 
 ## Special Requests
 
 **"Generate more cards / materials"** -> Route to Material Forge (on-demand mode)
-**"Explain this topic" / "Make me a lesson" / "Create a reference page"** -> Route to Lesson Studio, then back to Training Conductor if assessment/drill should continue
 **"Show my knowledge graph / progress"** -> Route to Dashboard Generator
 **"I've been practicing in Anki"** -> Ask for the .apkg export, create an external import file in `learn-anything/<slug>/external-imports/`, route to Training Conductor which will process it at session start
 **"I want to add a self-report"** -> Structure the report as JSON per the external-import schema, save to `learn-anything/<slug>/external-imports/`, note it will be processed at next session start
@@ -250,5 +232,4 @@ Once in the LEARNING phase:
 - **Smooth transitions.** The learner should experience a coherent journey, not a series of disconnected tools. Bridge between components conversationally.
 - **Preserve state on error.** Never delete or overwrite working state when something goes wrong.
 - **Respect the learner's time.** If they just want a quick session, don't force them through the full dashboard update. If they want to skip ahead, let them (within reason).
-- **The Conductor is the primary mode.** Most interactions after onboarding should route to the Training Conductor. Lesson Studio is a supporting component for learner-facing explanations, not a second source of truth.
-- **Lesson Studio never owns mastery.** HTML lessons, glossary updates, and reference pages may be generated on demand, but only the Training Conductor decides advancement and writes progress/knowledge-state changes.
+- **The Conductor is the primary mode.** Most interactions after onboarding should route to the Training Conductor. The other components are invoked only when triggered by the Conductor or by explicit user request.

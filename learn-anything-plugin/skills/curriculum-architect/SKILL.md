@@ -16,7 +16,7 @@ All state files live in `learn-anything/<skill-slug>/`. Read `learn-anything/act
 Before starting, read:
 1. `learn-anything/<skill-slug>/domain-assessment.json` — Skill classification, learner constraints, approach strategy, identity frame
 2. `learn-anything/<skill-slug>/knowledge-graph.json` — The gap map: dependency graph with learner overlay, priority gaps, transfer leverage
-3. `../schemas/learning-plan.schema.json` — Output format
+3. `schemas/learning-plan.schema.json` — Output format
 4. `references/4cid-encoding.md` — Curriculum generation rules (4C/ID, Elaboration Theory, Productive Failure, interleaving, spacing, mastery gates)
 5. `references/motivation-architecture.md` — Seven-layer motivation system
 
@@ -166,18 +166,18 @@ Follow `references/motivation-architecture.md` to build all seven layers:
 2. **Process goals**: Write specific daily process goals for each phase of the curriculum
 3. **Competence markers**: Define visible progress milestones tied to real retention (not effort)
 4. **Flow/deliberate practice**: Built into session design above
-5. **Community resources**: Suggest relevant communities, practice partners, or accountability structures from the NotebookLM-grounded research sources. If a needed community URL is missing, use ordinary web search only for URL discovery, then route it through NotebookLM before treating it as source-grounded.
+5. **Community resources**: Suggest relevant communities, practice partners, or accountability structures from NotebookLM-grounded research sources. If a needed community/resource URL is missing: use ordinary web search only to discover the URL, import/link it into NotebookLM, then use NotebookLM retrieval before treating it as source-grounded.
 6. **Plateau protocols**: Built into the schedule above
 7. **Stakes plan**: Only if the learner's intrinsic motivation is low for specific tasks. Autonomy-supportive framing.
 
 ### Step 5: Produce Output
 
-Write the complete Learning Plan as JSON conforming to `../schemas/learning-plan.schema.json`. Save to `learn-anything/<skill-slug>/learning-plan.json`.
+Write the complete Learning Plan as JSON conforming to `schemas/learning-plan.schema.json`. Save to `learn-anything/<skill-slug>/learning-plan.json`.
 
 ### Validate Output
 
 Before writing the output file, verify:
-1. The JSON conforms to `../schemas/learning-plan.schema.json` — all required fields present and correctly typed
+1. The JSON conforms to `schemas/learning-plan.schema.json` — all required fields present and correctly typed
 2. All UUID fields are valid v4 UUIDs
 3. All date-time fields are ISO 8601 format
 4. All enum fields use values from the schema's enum lists
@@ -204,6 +204,7 @@ The summary should be energizing. The learner should finish this conversation th
 - **The schedule must be realistic.** Check it against the learner's stated constraints. If the curriculum doesn't fit the timeframe at the learner's available hours, adjust scope — don't pretend it fits.
 - **Dual timeline, always.** Even if the stated timeframe is generous, provide an extended roadmap. Learning doesn't end when the plan does.
 - **Motivation is structural, not inspirational.** Don't add "stay motivated!" text. Build motivation INTO the curriculum structure: process goals, visible progress, pre-framed plateaus, community connections.
+- **Resource recommendations must be source-grounded.** Do not recommend books, courses, communities, tools, or videos as researched resources unless they are present in `skill-dossier.research_sources`, `notebooklm-manifest.json`, or supported by `citations.jsonl`.
 
 ## Update Mode
 
