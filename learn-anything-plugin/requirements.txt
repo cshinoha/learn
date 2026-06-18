@@ -1,2 +1,1 @@
 genanki>=0.13.0
-yt-dlp

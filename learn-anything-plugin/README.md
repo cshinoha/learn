@@ -21,7 +21,7 @@ The orchestrator also activates automatically for natural-language requests like
 
 ## Pipeline
 
-Eight skills form a sequential pipeline, managed by the orchestrator:
+Nine skills form a coordinated pipeline, managed by the orchestrator:
 
 ```
 Onboarding (1-2 conversations):
@@ -38,10 +38,11 @@ Onboarding (1-2 conversations):
 
 Learning (ongoing, session-by-session):
 
-  Training Conductor
-  (Socratic teaching, adaptive difficulty, mastery gates,
-   spaced retrieval, plateau detection, progress tracking,
-   instructor personas, mentor conversation mode)
+  Training Conductor ──> Lesson Studio
+  (Socratic teaching,     (teach-style HTML lessons,
+   adaptive difficulty,    references, glossary,
+   mastery gates,          mission-grounded explanations)
+   progress tracking)
 ```
 
 ## What's New in v2.0
@@ -52,6 +53,7 @@ Learning (ongoing, session-by-session):
 - **Session transcripts** — Full session logs saved to `transcripts/` for review
 - **Curriculum updates** — `/update` command for evolving fields
 - **Material generation** — `/materials` command for on-demand content with dedicated subagents
+- **Teach-style lesson artifacts** — Lesson Studio creates beautiful self-contained HTML lessons, reference pages, and glossary-driven explanations inside the active skill workspace
 - **Improved research** — Ferriss interview protocol now mandatory, freshness detection for cutting-edge fields
 - **Better visuals** — WCAG-compliant color contrast, inline SVG over Mermaid for learning materials
 - **Expert panel** — Skill Researcher identifies masters of the field for persona selection
@@ -65,8 +67,9 @@ Learning (ongoing, session-by-session):
 | `skill-researcher` | Web-search-grounded decomposition, dependency graph, frequency/impact analysis |
 | `learner-calibrator` | Adaptive diagnostic using Knowledge Space Theory, graph propagation, transfer probes |
 | `curriculum-architect` | 4C/ID whole-task sequencing, Elaboration Theory epitome, productive failure placement |
-| `material-forge` | Anki flashcards, worked examples, practice sets, assessments, Mermaid visualizations |
+| `material-forge` | Anki flashcards, worked examples, practice sets, assessments, visualizations, and lesson-generation orchestration |
 | `training-conductor` | Interactive sessions using 5 templates (A-E), escalation ladder, real-time calibration |
+| `lesson-studio` | Teach-style HTML lessons, quick-reference pages, glossary updates, and mission-grounded explanation artifacts |
 | `dashboard-generator` | React artifact with knowledge graph, curriculum roadmap, retention metrics |
 
 ## State Files
@@ -83,8 +86,16 @@ Each skill gets its own workspace under `learn-anything/<skill-slug>/` in the us
     │   ├── knowledge-graph.json
     │   ├── learning-plan.json
     │   ├── srs-cards.json
+    │   ├── notebooklm-manifest.json  # optional NotebookLM metadata mirror
+    │   ├── citations.jsonl           # optional normalized used citations
     │   ├── progress.json
     │   ├── materials/
+    │   ├── teach/
+    │   │   ├── MISSION.md
+    │   │   ├── GLOSSARY.md
+    │   │   ├── RESOURCES.md
+    │   │   ├── lessons/
+    │   │   └── reference/
     │   └── external-imports/
     └── classical-guitar/
         └── (same structure)
@@ -97,8 +108,60 @@ Each skill gets its own workspace under `learn-anything/<skill-slug>/` in the us
 | `knowledge-graph.json` | Learner Calibrator + Training Conductor | `schemas/knowledge-graph.schema.json` |
 | `learning-plan.json` | Curriculum Architect | `schemas/learning-plan.schema.json` |
 | `srs-cards.json` | Material Forge | `schemas/srs-cards.schema.json` |
+| `notebooklm-manifest.json` | Skill Researcher / Lesson Studio | `schemas/notebooklm-manifest.schema.json` |
+| `citations.jsonl` | Skill Researcher / Lesson Studio / Training Conductor | `schemas/citation.schema.json` (one JSON object per line) |
 | `progress.json` | Training Conductor | `schemas/progress.schema.json` |
 | `external-imports/` | User/external tools | `schemas/external-import.schema.json` |
+
+## NotebookLM Integration
+
+NotebookLM support is optional but preferred for indexed, source-grounded learning. The integration is designed around this contract:
+
+```text
+Links in, compact grounded evidence out. No files in/out.
+```
+
+Architecture overview:
+
+```text
+remote learn-anything
+  -> SSH reverse HTTP endpoint
+  -> local notebooklm-mcp-cli sidecar
+  -> NotebookLM notebooks
+```
+
+The default workflow is link-only. The plugin links curated URLs, YouTube URLs, Drive/doc links, or other approved provider links into NotebookLM; it does not upload/download source files, stage local files, download NotebookLM artifacts, store raw NotebookLM blobs, or cache retrieval results. NotebookLM can produce a compact retrieval pack for the main LLM context: short synthesis, selected citations, timestamps/deep links, source IDs, notebook IDs, confidence, and limitations.
+
+Setup overview (keep secrets outside repo/state files):
+
+```bash
+nlm login
+notebooklm-mcp --transport http --port 8000
+ssh -N -R 18000:127.0.0.1:8000 <remote-host>
+export NOTEBOOKLM_MCP_ENDPOINT=http://127.0.0.1:18000
+```
+
+Helper scripts:
+
+```powershell
+# Local Windows machine: installs uv/notebooklm-mcp-cli, verifies nlm/notebooklm-mcp,
+# optionally runs login and starts the HTTP sidecar.
+powershell -ExecutionPolicy Bypass -File .\learn-anything-plugin\scripts\notebooklm\setup-local-windows.ps1 -RunLogin -StartServer
+```
+
+```bash
+# Remote machine where learn-anything skills run: installs/verifies Node.js,
+# persists NOTEBOOKLM_MCP_ENDPOINT, and runs repo-local validators.
+bash learn-anything-plugin/scripts/notebooklm/setup-remote.sh --remote-port 18000
+```
+
+Runtime state:
+
+- `learn-anything/<skill-slug>/notebooklm-manifest.json` mirrors NotebookLM notebook shards, linked sources, artifact metadata, sync status, and redacted errors.
+- `learn-anything/<skill-slug>/citations.jsonl` stores normalized citations actually used by lessons/research/training.
+- `skill-dossier.research_sources` stays lightweight: title/link, format, role, level, annotation, curation status, and pointers.
+
+Limitations: NotebookLM MCP currently relies on internal/unsupported NotebookLM APIs via `notebooklm-mcp-cli`; auth can expire and transports can fail. On NotebookLM failure the system should refresh/reconnect once, then ask the user how to proceed. Silent fallback is forbidden for source-grounded work.
 
 ## Prerequisites
 
@@ -137,7 +200,7 @@ If this plugin is published to a GitHub-based marketplace:
 /plugin marketplace add NetRxn/learn-anything
 ```
 
-Then enable the plugin when prompted. All 8 skills are auto-discovered from the `skills/` directory.
+Then enable the plugin when prompted. All 9 skills are auto-discovered from the `skills/` directory.
 
 
 ### Verify installation
@@ -162,22 +225,6 @@ learn-anything/
 - **FSRS**: Machine-learned spaced repetition scheduling
 - **Knowledge Space Theory**: Efficient diagnostic assessment (Doignon & Falmagne)
 - **Seven-Layer Motivation Architecture**: Identity, process goals, competence feedback, flow/deliberate practice, relatedness, plateau protocols, strategic stakes
-
-## NotebookLM support
-
-NotebookLM integration expects a local MCP endpoint:
-
-```bash
-export NOTEBOOKLM_MCP_ENDPOINT=http://localhost:18000/mcp
-```
-
-YouTube subtitle sidecar support requires:
-
-```bash
-pip install yt-dlp
-```
-
-NotebookLM state is metadata-only: do not persist raw NotebookLM answers, raw source text, full MCP dumps, secrets, downloaded subtitle files, or local retrieval caches.
 
 ## Anki Round-Trip
 

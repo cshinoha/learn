@@ -1,0 +1,19 @@
+{
+  "query": "How do Python iterators support memory-efficient data processing?",
+  "answer_summary": "Iterators let Python consume items lazily, so programs can process streams without materializing every value at once.",
+  "confidence": "high",
+  "citations": [
+    {
+      "source_id": "src_python_docs_iterators",
+      "location_type": "section",
+      "location": "Iterators",
+      "snippet": "Iterators represent streams of data and return elements one at a time.",
+      "deep_link": "https://docs.python.org/3/howto/functional.html#iterators",
+      "confidence": "high"
+    }
+  ],
+  "followup_queries": [
+    "How are generators different from iterator classes?"
+  ],
+  "limitations": []
+}

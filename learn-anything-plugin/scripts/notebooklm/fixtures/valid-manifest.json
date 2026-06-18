@@ -1,22 +1,80 @@
 {
   "version": "1.0",
-  "skill_slug": "python-basics",
-  "skill_id": "python-basics",
-  "created_at": "2026-06-18T00:00:00Z",
-  "updated_at": "2026-06-18T00:00:00Z",
+  "skill_slug": "python-data",
+  "skill_id": "py01",
+  "created_at": "2026-06-10T10:00:00Z",
+  "updated_at": "2026-06-10T10:30:00Z",
   "naming_convention": "LA - <skill-slug> - <short-id> - <shard>",
   "binding_strategy": "names_plus_mirror",
   "transport": {
-    "type": "mcp",
+    "type": "http_via_ssh_reverse",
     "endpoint_env": "NOTEBOOKLM_MCP_ENDPOINT",
-    "mcp_server": null,
-    "last_checked_at": null
+    "mcp_server": "notebooklm-mcp-cli",
+    "last_checked_at": "2026-06-10T10:25:00Z"
   },
-  "notebooks": [],
-  "sources": [],
-  "artifacts": [],
+  "notebooks": [
+    {
+      "shard_index": 1,
+      "notebook_id": "nb_python_data_001",
+      "notebook_name": "LA - python-data - py01 - 001",
+      "status": "active",
+      "created_at": "2026-06-10T10:05:00Z",
+      "last_seen_at": "2026-06-10T10:25:00Z",
+      "last_query_at": null,
+      "last_error": null
+    }
+  ],
+  "sources": [
+    {
+      "resource_id": "res_python_docs_iterators",
+      "source_id": "src_python_docs_iterators",
+      "notebook_id": "nb_python_data_001",
+      "shard_index": 1,
+      "title": "Python iterator documentation",
+      "url": "https://docs.python.org/3/howto/functional.html#iterators",
+      "source_type": "url",
+      "curation_status": "indexed",
+      "learning_role": "reference",
+      "linked_at": "2026-06-10T10:10:00Z",
+      "last_verified_at": "2026-06-10T10:25:00Z",
+      "last_error": null
+    },
+    {
+      "resource_id": "res_python_video_generators",
+      "source_id": "src_python_video_generators",
+      "notebook_id": "nb_python_data_001",
+      "shard_index": 1,
+      "title": "Generator explanation video",
+      "url": "https://www.youtube.com/watch?v=example12345",
+      "source_type": "youtube",
+      "curation_status": "linked",
+      "learning_role": "explanation",
+      "linked_at": "2026-06-10T10:12:00Z",
+      "last_verified_at": null,
+      "last_error": null
+    }
+  ],
+  "artifacts": [
+    {
+      "artifact_id": "art_quiz_iterators",
+      "notebook_id": "nb_python_data_001",
+      "artifact_type": "quiz",
+      "title": "Iterator recall check",
+      "url": "https://notebooklm.google.com/notebook/example/artifact/quiz",
+      "metadata": {
+        "role": "assessment",
+        "item_count": 5
+      },
+      "created_for": "lesson:iterators-intro",
+      "created_at": "2026-06-10T10:20:00Z",
+      "status": "created",
+      "last_error": null
+    }
+  ],
   "sync": {
-    "last_sync_at": null,
+    "mode": "write_through_remote_writes_mirror",
+    "last_sync_at": "2026-06-10T10:30:00Z",
+    "last_sidecar_seen_at": "2026-06-10T10:25:00Z",
     "last_error": null
   }
 }

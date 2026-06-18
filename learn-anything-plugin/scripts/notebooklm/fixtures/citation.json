@@ -1,16 +1,17 @@
 {
-  "citation_id": "cite-python-basics-001",
-  "used_at": "2026-06-18T00:00:00Z",
-  "phase": "research",
-  "notebook_id": "notebook-1",
-  "source_id": "source-1",
-  "source_title": "Python Tutorial",
-  "url": "https://docs.python.org/3/tutorial/",
-  "claim_supported": "Official tutorial is useful for Python basics.",
-  "locator": {
-    "page": null,
-    "section": "The Python Tutorial",
-    "timestamp": null
-  },
-  "confidence": "medium"
+  "skill_slug": "python-data",
+  "query_id": "query_iterators_intro",
+  "used_for": "lesson:iterators-intro",
+  "notebook_id": "nb_python_data_001",
+  "source_id": "src_python_docs_iterators",
+  "source_title": "Python iterator documentation",
+  "source_url": "https://docs.python.org/3/howto/functional.html#iterators",
+  "location_type": "section",
+  "location": "Iterators",
+  "timestamp_seconds": null,
+  "page": null,
+  "section_title": "Iterators",
+  "snippet": "Iterators represent streams of data and return elements one at a time.",
+  "deep_link": "https://docs.python.org/3/howto/functional.html#iterators",
+  "confidence": "high"
 }

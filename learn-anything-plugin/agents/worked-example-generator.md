@@ -10,7 +10,7 @@ tools:
 
 # Worked Example Generator
 
-Generate worked examples with backward fading for each task class. These are the core lesson materials — they demonstrate how to think through problems, not just what the answer is.
+Generate worked examples with backward fading for each task class. These are the pedagogical backbone for lessons and drills — they demonstrate how to think through problems, not just what the answer is. Lesson Studio may later package this backbone into learner-facing HTML lessons.
 
 ## Inputs
 
@@ -61,3 +61,9 @@ Before returning:
 ## Output
 
 Write worked examples as markdown files to `materials/worked-examples/tc<N>-worked-examples.md` — all versions for the task class in one file.
+
+Also include a short header block in the file summarizing:
+- the task class / topic scope
+- likely misconceptions surfaced by the example
+- recommended lesson focus for Lesson Studio
+- recommended transfer check after the fading sequence

@@ -1,6 +1,6 @@
 ---
 name: training-conductor
-description: "This skill should be used when a learner is ready for a training session — they've been through the assessment/research/calibration/curriculum pipeline and have a learning plan, or when the user invokes '/train'. Manages session flow (warm-up, deliberate practice, integration), adaptive teaching using Socratic questioning and the EMT escalation ladder, real-time difficulty calibration, in-session retrieval probes, mastery gate assessments, knowledge graph updates, external data integration (Anki, self-reports), plateau detection, motivation management, instructor persona adoption, and mentor conversation mode. Sessions are scoped to ~150k tokens. State is read at session start and written at session end."
+description: "This skill should be used when a learner is ready for a training session — they've been through the assessment/research/calibration/curriculum pipeline and have a learning plan, or when the user invokes '/train'. Manages session flow (warm-up, deliberate practice, integration), adaptive teaching using Socratic questioning and the EMT escalation ladder, real-time difficulty calibration, in-session retrieval probes, mastery gate assessments, knowledge graph updates, external data integration (Anki, self-reports), plateau detection, motivation management, instructor persona adoption, mentor conversation mode, and invocation of teach-style HTML lesson artifacts when explanation-heavy sessions need them. Sessions are scoped to ~150k tokens. State is read at session start and written at session end."
 ---
 
 # Training Conductor
@@ -22,6 +22,14 @@ Act as the core teaching agent. Work with learners session-by-session over weeks
 ## Workspace
 
 All state files live in `learn-anything/<skill-slug>/`. Read `learn-anything/active-skill.json` to find the active skill slug.
+
+Learner-facing explanation artifacts may also exist under `learn-anything/<skill-slug>/teach/`:
+- `MISSION.md`
+- `GLOSSARY.md`
+- `RESOURCES.md`
+- `lessons/*.html`
+- `reference/*.html`
+- `bridge/lesson-result.json`
 
 ## Reference Files
 
@@ -52,9 +60,13 @@ At the start of EVERY session:
    - For self-reports: extract component observations -> small mastery deltas
    - Update knowledge graph vertices accordingly
    - Note what the imports revealed for the session opening: "I see your Anki reviews show strong retention on X but some difficulty with Y — let's work on that."
-5. **Use NotebookLM-backed retrieval when needed** — If the session requires source-backed factual explanation, citations, document/video/reference discussion, or timestamp lookup, read `notebooklm-manifest.json` and use the active skill's notebook array for grounded retrieval.
-6. **Use NotebookLM-backed video timestamps only when needed** — For video evidence or navigation, use NotebookLM sources named `<title> [<video-id>]`, subtitle sidecars ending `.srt.txt`, and chapter sidecars ending `.chapters.txt`. Timestamp links must come from NotebookLM subtitle evidence. Do not query YouTube directly for content or invent timestamps.
-
+5. **Decide whether today's session needs a learner-facing lesson artifact** — Invoke Lesson Studio before core teaching when ANY of these are true:
+   - today's focus introduces a new concept-heavy topic
+   - the learner previously showed a stable misconception that needs a clearer explanation artifact
+   - a worked-example drill exists but there is no reusable HTML lesson or quick-reference page for the topic
+   - the learner explicitly asks for a lesson, explanation page, or printable reference
+   If you invoke Lesson Studio, write `teach/bridge/lesson-request.json` first with the scoped topic, prerequisites, must-cover misconceptions, and desired drill follow-up. After Lesson Studio returns, use its `lesson-result.json` as a session input — but do NOT let it update mastery or progress.
+6. **Use NotebookLM-backed video timestamps only when needed** — For video evidence or navigation, use NotebookLM sources named `<title> [<video-id>]`, subtitle sidecars ending `.srt.txt`, and chapter sidecars ending `.chapters.txt`. Timestamp links must come from NotebookLM subtitle evidence (prefer `scripts/notebooklm/query-video-timestamps.mjs`); do not query YouTube directly for content or invent timestamps. Raw subtitle/chapter text must never be written into transcripts, manifests, citations, or progress state.
 #### Teaching Preferences
 
 Read `teaching_preferences` from domain-assessment.json:
@@ -79,7 +91,7 @@ Initialize with:
 - Difficulty Zone: <starting-zone>
 ```
 
-5. **Plan the session** — Based on agenda, determine:
+6. **Plan the session** — Based on agenda, determine:
    - Which retrieval probes to run (vertices due for delayed review)
    - What new content to introduce (next in the task class sequence)
    - Which session template to use (A/B/C/D/E from the learning plan's task assignment)
@@ -90,35 +102,32 @@ Initialize with:
 ### NotebookLM source triggers and fallback
 
 NotebookLM RAG-first retrieval is required when the learner asks for, or the session requires:
-- factual explanation;
-- source-backed question;
-- citation;
-- timestamp;
-- page, section, slide, quote, or deep-link request;
-- book/doc/video/reference discussion;
-- disputed claim;
-- explanation that should be grounded in trusted sources.
+- factual explanation
+- source-backed question
+- citation, timestamp, page, section, slide, quote, or deep-link request
+- book/doc/video/reference discussion
+- disputed claim
+- lesson-like explanation that should be grounded in trusted sources
 
-NotebookLM is not required for:
-- coaching;
-- motivation;
-- session-flow management;
-- meta-learning discussion;
-- purely interactive practice that does not depend on source evidence.
+NotebookLM is not required for coaching, motivation, session-flow management, meta-learning discussion, or purely interactive practice that does not depend on source evidence.
 
 When a source trigger fires:
-1. Read `notebooklm-manifest.json`.
-2. Use the active skill's notebook array for grounded retrieval.
-3. If no relevant indexed source exists, route to Skill Researcher/source discovery before answering as source-grounded.
-4. Bring only a compact retrieval pack into the dialogue context: short synthesis, selected citations, source IDs, notebook IDs, timestamps/deep links where available, confidence, and limitations.
-5. Cite selected evidence naturally in the explanation.
-6. Append detailed used citations to `citations.jsonl`.
-7. Keep NotebookLM enabled only for the retrieval/citation phase.
+1. Read `notebooklm-manifest.json` and use the active skill's notebook array for grounded retrieval.
+2. If no relevant indexed source exists, route to Skill Researcher/source discovery before answering as source-grounded.
+3. Bring only the compact retrieval pack into the dialogue context.
+4. Cite selected evidence naturally in the explanation and preserve detailed used citations in `citations.jsonl` when they are actually used.
+5. Keep NotebookLM enabled only for the retrieval/citation phase.
 
-Fallback policy:
-- On auth/transport/tool failure, attempt refresh/reconnect once.
-- If it still fails, ask whether to fix NotebookLM and retry, use saved citations only, or stop source-grounded work.
-- Do not silently substitute ordinary web research or uncited parametric knowledge.
+Fallback policy: on auth/transport/tool failure, attempt refresh/reconnect once. If it still fails, ask the user whether to wait/fix NotebookLM, use saved citations only, or stop the source-grounded work. Do not silently substitute ordinary web research or uncited parametric knowledge.
+
+### Lesson Artifact Protocol (when invoked)
+
+If Lesson Studio generated or refreshed an artifact for today's topic:
+1. Tell the learner what was created and where it lives.
+2. Use the HTML lesson as an anchor, not a replacement for dialogue.
+3. Ask the learner to skim/read the relevant section, then immediately move into questions, explanation, and drill.
+4. Reuse `lesson-result.json` for suggested questions, drills, glossary terms, and risk flags.
+5. Keep the authority boundary strict: the artifact explains; the Conductor assesses.
 
 ### Opening (~10-15% of session)
 
@@ -128,7 +137,14 @@ Fallback policy:
 
 ### Core Teaching (~70-80% of session)
 
-Run the appropriate session template from `references/session-templates.md`:
+Run the appropriate session template from `references/session-templates.md`.
+
+When a teach-style lesson exists for the current focus, weave it into the chosen template:
+- **Template A:** use the HTML lesson's mission hook, concise explanation, and cited examples before or during guided discovery
+- **Template C:** use the worked example / fading portions of the lesson as the opening scaffold, then continue with live drill
+- **Template B/E:** use the lesson only as a prior artifact reference; do not turn review or assessment into a reading exercise
+- **Template D:** do not show the explanatory section before the productive-failure struggle; use the lesson only after impasse if needed
+
 
 **Template A (Concept Introduction)**: For new concepts. Activate prior knowledge -> elicit preconceptions -> guided discovery through Socratic questioning -> consolidation. Use the escalation ladder throughout.
 
@@ -245,6 +261,9 @@ For retrieval probes specifically:
 
 After each session, update `learn-anything/<skill-slug>/progress.json`:
 
+If a teach-style lesson or reference page was used, mention its role in the `session_summary` and topic notes, but do not treat lesson generation itself as evidence of learning.
+
+
 Add a session entry with:
 - session_id, date, duration, template_used
 - topics covered (vertex_ids + activity_type + performance)
@@ -318,9 +337,9 @@ Adapt the teaching approach based on the skill type from the domain assessment:
 
 **Upstream feedback loops:** Ongoing training may reveal the need to revisit earlier pipeline stages. Signal the orchestrator when:
 - **→ Skill Researcher (re-research):** The learner encounters concepts or approaches not in the dossier, or the field has evolved since the original research. Example: learner asks about a technique the skill graph doesn't cover.
-- **→ Skill Researcher / source discovery:** No indexed NotebookLM source exists for a source-grounded learner request, or current sources are stale/insufficient.
 - **→ Learner Calibrator (re-assessment):** Mastery estimates have drifted significantly from observed performance across multiple sessions, or the learner reports external learning (bootcamp, course, significant practice) that may have changed their knowledge state substantially.
 - **→ Curriculum Architect (re-sequencing):** The current task class sequence isn't working — the learner is consistently hitting prerequisites they don't have, or breezing through content that was expected to be challenging. The plan needs restructuring, not just difficulty adjustment.
 - **→ Material Forge (new materials):** Existing materials are exhausted for a task class, or the learner needs materials in a different format/style than what was generated. Route via `/materials` or signal the orchestrator.
+- **→ Lesson Studio (new explanation artifact):** The learner needs a cleaner single-topic lesson, printable reference, or glossary-backed re-explanation for the current focus. Use this when the issue is explanatory packaging, not curriculum sequencing.
 
 These are not automatic triggers — use judgment based on accumulated session evidence. A single difficult session is not grounds for re-sequencing; a pattern across 3+ sessions is.

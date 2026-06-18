@@ -166,7 +166,7 @@ Follow `references/motivation-architecture.md` to build all seven layers:
 2. **Process goals**: Write specific daily process goals for each phase of the curriculum
 3. **Competence markers**: Define visible progress milestones tied to real retention (not effort)
 4. **Flow/deliberate practice**: Built into session design above
-5. **Community resources**: Suggest relevant communities, practice partners, or accountability structures from NotebookLM-grounded research sources. If a needed community/resource URL is missing: use ordinary web search only to discover the URL, import/link it into NotebookLM, then use NotebookLM retrieval before treating it as source-grounded.
+5. **Community resources**: Suggest relevant communities, practice partners, or accountability structures from the NotebookLM-grounded research sources. If a needed community URL is missing, use ordinary web search only for URL discovery, then route it through NotebookLM before treating it as source-grounded.
 6. **Plateau protocols**: Built into the schedule above
 7. **Stakes plan**: Only if the learner's intrinsic motivation is low for specific tasks. Autonomy-supportive framing.
 
@@ -204,7 +204,6 @@ The summary should be energizing. The learner should finish this conversation th
 - **The schedule must be realistic.** Check it against the learner's stated constraints. If the curriculum doesn't fit the timeframe at the learner's available hours, adjust scope — don't pretend it fits.
 - **Dual timeline, always.** Even if the stated timeframe is generous, provide an extended roadmap. Learning doesn't end when the plan does.
 - **Motivation is structural, not inspirational.** Don't add "stay motivated!" text. Build motivation INTO the curriculum structure: process goals, visible progress, pre-framed plateaus, community connections.
-- **Resource recommendations must be source-grounded.** Do not recommend books, courses, communities, tools, or videos as researched resources unless they are present in `skill-dossier.research_sources`, `notebooklm-manifest.json`, or supported by `citations.jsonl`.
 
 ## Update Mode
 
