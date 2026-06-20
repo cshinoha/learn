@@ -1,13 +1,13 @@
 ---
 name: lesson-studio
-description: "use when learn-anything needs a learner-facing studyforge-style self-contained html course, study guide, annotated lesson, or exam-prep artifact. wraps StudyForge HTML generation using upstream learn-anything state, source materials, NotebookLM citation packs when required, and lesson-request context. never updates mastery state or chooses curriculum independently."
+description: "use when learn-anything needs a learner-facing studyforge-style self-contained html course, study guide, annotated lesson, interactive practice page, or exam-prep artifact. wraps StudyForge HTML generation using upstream lesson-request context, source materials, NotebookLM citation packs when required, and learn-anything workspace state. never chooses curriculum independently, never updates mastery, and never invents project/system context."
 ---
 
 # Lesson Studio
 
 Act as the learn-anything wrapper around StudyForge HTML generation.
 
-Lesson Studio does not own curriculum selection. It receives materials and scope from upstream learn-anything components, prepares the generation context, invokes the StudyForge-style HTML generation process described in `references/studyforge-html-generation.md`, and writes the final handoff metadata.
+Lesson Studio does not own curriculum selection. It receives the artifact request, scope, constraints, learner context, and content plan from upstream learn-anything components. It prepares a compact generation context and follows `references/studyforge-html-generation.md` to create one self-contained StudyForge-style HTML artifact.
 
 ## Role Boundary
 
@@ -15,11 +15,11 @@ Lesson Studio owns:
 
 - resolving the active learn-anything workspace;
 - reading upstream state and material files;
-- using `teach/bridge/lesson-request.json` when present;
-- preparing a compact generation context for StudyForge;
-- generating one self-contained StudyForge-style HTML artifact;
-- adding annotation, persistence, export/import, quiz, and exam-prep behavior through the StudyForge HTML output;
-- updating teaching support files such as `teach/GLOSSARY.md`, `teach/RESOURCES.md`, and `teach/NOTES.md` when useful;
+- using `teach/bridge/lesson-request.json` as the source of truth when present;
+- preparing a compact generation context for StudyForge-style HTML generation;
+- generating one self-contained HTML artifact under `teach/courses/`;
+- adding selected-text annotations, local persistence, export/import, quizzes, checks, and exam-prep behavior through the generated HTML;
+- updating teaching support files such as `teach/GLOSSARY.md`, `teach/RESOURCES.md`, and `teach/NOTES.md` only when useful and grounded;
 - writing `teach/bridge/lesson-result.json`.
 
 Lesson Studio does not own:
@@ -28,6 +28,7 @@ Lesson Studio does not own:
 - deciding what the learner has mastered;
 - updating `progress.json`;
 - updating `knowledge-graph.json`;
+- inventing that the learner has a system, project, application, service, team, company, production codebase, or architecture;
 - implementing a second HTML layout separate from StudyForge;
 - duplicating annotation or quiz mechanics outside the StudyForge generation references.
 
@@ -81,6 +82,22 @@ Before proceeding, verify:
 
 If upstream scope is ambiguous, report the missing context instead of inventing a curriculum step.
 
+## Source of Truth
+
+`teach/bridge/lesson-request.json`, when present, is the source of truth for:
+
+- topic and scope;
+- section types;
+- exercise types;
+- reflection prompts;
+- scenarios;
+- target context;
+- programming labs;
+- exam requirements;
+- source-grounding requirements.
+
+If the request does not include a system, project, application, service, team, production codebase, or architecture, do not mention or assume one. Use neutral study phrasing instead.
+
 ## Scope Selection
 
 Prefer `teach/bridge/lesson-request.json` when present. It should define the concrete artifact request: topic, task-class scope, must-cover items, misconceptions, practice targets, citation requirements, and artifact intent.
@@ -111,10 +128,11 @@ For source-grounded lessons, factual explanations, document/book/video reference
 For all learner-facing HTML artifacts, follow:
 
 - `references/studyforge-html-generation.md`
+- `references/programming-lab.md` when a programming lab is explicitly requested
 - `references/annotation-runtime.md`
 - `references/html-quality-checklist.md`
 
-Lesson Studio should pass StudyForge a compact generation context containing:
+Lesson Studio should pass StudyForge a compact generation context containing only upstream-provided or directly grounded data:
 
 - topic and title;
 - learner mission and constraints;
@@ -125,7 +143,7 @@ Lesson Studio should pass StudyForge a compact generation context containing:
 - source-grounding requirements;
 - citations and source links when available;
 - relevant glossary terms;
-- suggested follow-up drills.
+- requested follow-up drills.
 
 StudyForge then generates one self-contained HTML file directly.
 
@@ -160,18 +178,18 @@ learn-anything/<skill-slug>/teach/bridge/lesson-result.json
 
 ## Quality Checklist
 
-Before finalizing, verify:
+Before finalizing:
 
-1. The artifact is a self-contained HTML file.
-2. The file opens directly in a browser.
-3. There is no build step and no framework dependency.
-4. The course is mission-grounded and uses upstream learner context.
-5. Substantive source-grounded claims include citations when required.
-6. Quiz, exam-prep, reveal, or practice interactions work.
-7. Annotation controls work.
-8. Local state persists through reload.
-9. Export/import notes controls exist.
-10. The artifact is useful without the chat transcript.
+1. Verify the artifact is a self-contained HTML file.
+2. Verify the file opens directly in a browser.
+3. Verify there is no build step and no framework dependency.
+4. Verify the course uses upstream learner context without inventing missing context.
+5. Verify substantive source-grounded claims include citations when required.
+6. Verify quiz, exam-prep, reveal, or practice interactions work.
+7. Verify annotation controls work.
+8. Verify local state persists through reload.
+9. Verify export/import controls exist inside a separate learner menu, not a floating overlay.
+10. Run `scripts/validate_studyforge_html.py <html-file>` when available.
 
 ## Hard Rules
 
@@ -182,6 +200,7 @@ Before finalizing, verify:
 - Do not create a separate StudyForge skill.
 - Do not maintain duplicate non-StudyForge HTML-generation rules inside Lesson Studio.
 - Do not require a separate data model as the source of truth for the HTML artifact.
+- Do not assume an existing system/project/application/service/team/codebase unless provided by upstream context.
 
 ## Handoff
 

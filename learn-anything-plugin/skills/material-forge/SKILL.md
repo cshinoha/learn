@@ -145,12 +145,13 @@ Vary surface features across versions (different numbers, scenarios, contexts) w
 
 For each task class that needs a learner-facing explanation artifact, create or update `teach/bridge/lesson-request.json` and invoke **Lesson Studio**.
 
-Lesson Studio is the learn-anything wrapper around StudyForge HTML generation. It receives upstream materials, prepares the generation context, and uses StudyForge to produce the final self-contained HTML artifact.
+Lesson Studio is the learn-anything wrapper around StudyForge HTML generation. It receives upstream materials, prepares the generation context, and uses StudyForge-style rules to produce the final self-contained HTML artifact.
 
 1. Create or update `teach/bridge/lesson-request.json` with:
    - topic / task-class scope
    - learner goal and identity framing
    - must-cover misconceptions, prerequisites, and transfer targets
+   - requested section types, exercise types, reflections, scenarios, labs, and assessments
    - references to relevant worked examples, practice sets, assessments, visuals, and source packs
    - whether the artifact needs source grounding, citations, exam prep, or an annotated study guide
 2. Invoke **Lesson Studio** to generate a StudyForge-style self-contained HTML artifact under `teach/courses/`.
@@ -163,8 +164,8 @@ Lesson Studio is the learn-anything wrapper around StudyForge HTML generation. I
    - final `teach/bridge/lesson-result.json`
 4. Keep authority boundaries clean:
    - Material Forge decides what material is needed
-   - Lesson Studio prepares the generation context and wraps StudyForge
-   - StudyForge generates the HTML
+   - Lesson Studio prepares the generation context and wraps StudyForge generation
+   - Lesson Studio must not invent missing project/system context
    - Material Forge must not duplicate HTML structure, annotation behavior, quiz UI, or progress runtime
    - Training Conductor remains the only owner of progress/mastery updates
 

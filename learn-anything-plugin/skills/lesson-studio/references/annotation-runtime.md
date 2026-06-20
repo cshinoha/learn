@@ -4,15 +4,13 @@ Add selection-based learner annotations to StudyForge-generated HTML.
 
 ## DOM Hooks
 
-Mark large content sections as annotatable:
+Mark meaningful content blocks as annotatable:
 
 ```html
-<section class="sf-annotatable" data-sf-section="section-1">
-  ...
-</section>
+<p class="sf-annotatable" data-sf-block="section-01-p1">...</p>
 ```
 
-The `data-sf-section` value must be stable within the generated HTML file.
+The `data-sf-block` value must be stable within the generated HTML file.
 
 Do not make controls annotatable:
 
@@ -25,6 +23,8 @@ select
 .sf-modal
 .quiz-option
 .exam-option
+#sfLearnerTools
+#sfAnnotationToolbar
 ```
 
 ## Stored State
@@ -45,25 +45,28 @@ Suggested state shape:
   "annotations": [
     {
       "id": "ann-001",
-      "sectionId": "section-1",
+      "blockId": "section-1-p1",
       "start": 120,
       "end": 153,
-      "text": "selected visible text",
+      "selectedText": "selected visible text",
+      "prefix": "...",
+      "suffix": "...",
       "note": "learner note",
       "createdAt": "...",
       "updatedAt": "..."
     }
   ],
-  "quizAnswers": {},
-  "examAnswers": {},
-  "completedChecks": [],
+  "answers": {},
+  "choices": {},
+  "exam": {},
+  "codeLabs": {},
   "ui": {}
 }
 ```
 
 ## Offset Rule
 
-Calculate offsets against the visible text of the nearest `.sf-annotatable` section, not against the full HTML document.
+Calculate offsets against the visible text of the nearest `.sf-annotatable[data-sf-block]` block, not against `innerHTML` and not against the full document.
 
 ## Required Features
 
@@ -75,7 +78,7 @@ The generated page must support:
 - export notes as JSON;
 - import notes from JSON;
 - clear notes;
-- avoid obvious overlapping annotation ranges within the same section.
+- avoid obvious overlapping annotation ranges within the same block.
 
 ## Boundaries
 

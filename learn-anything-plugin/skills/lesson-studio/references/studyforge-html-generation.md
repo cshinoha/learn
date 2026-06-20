@@ -10,14 +10,44 @@ Expect Lesson Studio to provide:
 - learner goal and mission framing;
 - current task-class scope;
 - prerequisites;
-- misconceptions and likely traps;
+- misconceptions or typical mistakes;
 - worked examples and practice targets;
 - relevant generated materials;
 - source-grounding requirements;
 - citations, timestamps, page references, or links when available;
-- glossary terms and related references.
+- glossary terms and related references;
+- explicit section, exercise, reflection, scenario, lab, or assessment requirements.
 
 Do not choose the curriculum. Use the scope provided by Lesson Studio.
+
+## Content Source Boundary
+
+Lesson Studio or the user's input is the source of truth for lesson content types and context.
+
+Do not infer that the learner has an existing system, project, application, service, team, company, production codebase, or architecture unless the input explicitly says so.
+
+Do not add reflection prompts, architecture prompts, scenario analysis, application-to-work prompts, or programming labs by default. Add them only when the compact generation context requests them or when they are directly necessary to teach the supplied material.
+
+Forbidden initial UI phrases unless the context explicitly provides such an object:
+
+- `в вашей системе`
+- `в вашем проекте`
+- `в вашем приложении`
+- `в вашем сервисе`
+- `в вашей команде`
+- `your system`
+- `your project`
+- `your application`
+- `your service`
+- `your team`
+
+Use neutral alternatives:
+
+- `в учебном примере`
+- `в этом фрагменте кода`
+- `в похожем сценарии`
+- `в реальном проекте, если он у вас есть`
+- `в заданном контексте`
 
 ## Output
 
@@ -38,19 +68,36 @@ Use a StudyForge-style sequence. Adapt section count to scope, but prefer:
 3. Prerequisite check or quick anchor
 4. Core explanation
 5. Worked example
-6. Common mistakes or misconceptions
+6. Typical mistakes or misconceptions
 7. Guided practice
 8. Quiz or knowledge check
 9. Exam-style checks when relevant
 10. Final summary
-11. Next steps or suggested drills
+11. Next steps or suggested drills when requested by upstream context
 
 This is a pedagogical structure, not a fixed schema.
 
+## Russian Wording
+
+For Russian learner-facing UI, avoid calques and awkward labels.
+
+Prefer:
+
+- `Пример`
+- `Типичная ошибка`
+- `На что обратить внимание`
+- `Важное замечание`
+- `Проверка понимания`
+- `Практика`
+
+Do not use `Ловушка` as a standard block label. Use `Типичная ошибка` or `На что обратить внимание`.
+
 ## Subject Adaptation
 
+Use subject adaptations only when requested by the Lesson Studio context or necessary for the provided material.
+
 Programming:
-- include code examples, trace exercises, debugging prompts, and run/compile checks when useful.
+- include code examples, trace exercises, debugging prompts, and run/compile checks only when useful and requested by scope.
 
 Science and math:
 - include formulas, units, worked examples, and misconception checks.
@@ -59,7 +106,7 @@ Humanities:
 - include comparisons, timelines, source interpretation, and argument analysis.
 
 Law and business:
-- include cases, scenarios, principle application, and borderline examples.
+- include cases, scenarios, principle application, and borderline examples only when the context asks for them.
 
 Languages:
 - include vocabulary, grammar patterns, translation checks, and short production tasks.
@@ -74,10 +121,56 @@ Include at least two meaningful interactive elements when scope allows:
 - self-explanation prompts;
 - guided completion;
 - misconception checks;
-- checklist completion;
-- reflection prompts.
+- checklist completion.
+
+Reflection prompts are not a default. Include them only when supplied or explicitly requested by upstream context.
 
 For exam-prep artifacts, include a final mixed check or practice exam section.
+
+## Answer Visibility Policy
+
+Use `source-visible-ui-hidden`.
+
+Answers may exist in HTML source, JavaScript, data attributes, embedded keys, or validation rules. They must not be visible in the initial learner interface before an attempt, explicit hint reveal, exam submission, or explicit "Show solution" action.
+
+Forbidden in visible initial UI:
+
+- answer-like placeholders;
+- visible `Correct answer` / `Правильный ответ` explanations;
+- visible solution code;
+- pre-opened solution details;
+- first-level hints that contain the final answer;
+- scaffold code that already contains the TODO solution.
+
+Allowed in source:
+
+- `data-correct` attributes;
+- answer arrays;
+- JavaScript answer keys;
+- regex-based self-check rules;
+- hidden explanations;
+- hidden solution details.
+
+Textarea and input placeholders must be neutral, for example `Введите ваш ответ` or `Исправьте код здесь`.
+
+## Learner Tools Menu
+
+Export/import/reset controls must live in a separate learner tools menu. They must not float over the content and must not use `position: sticky`, `position: fixed`, or `position: absolute` for the menu container.
+
+Required IDs:
+
+```html
+<div id="sfLearnerTools" class="sf-learner-tools" aria-label="Инструменты курса">
+  <button type="button" id="sfLearnerMenuToggle" aria-expanded="false" aria-controls="sfLearnerMenuPanel">Инструменты курса</button>
+  <div id="sfLearnerMenuPanel" class="sf-learner-menu" hidden>
+    <span id="sfSaveStatus">Сохранено локально</span>
+    <button type="button" id="sfExportState">Экспорт заметок</button>
+    <label for="sfImportState" class="sf-import-label">Импорт заметок</label>
+    <input id="sfImportState" type="file" accept="application/json" hidden>
+    <button type="button" id="sfResetState">Очистить сохранённое</button>
+  </div>
+</div>
+```
 
 ## Persistence
 
@@ -87,6 +180,7 @@ Use browser `localStorage` to store:
 - quiz answers;
 - exam answers;
 - completed checks;
+- code answers when code-editing labs are present;
 - last visited section;
 - expanded/collapsed UI state when present.
 
