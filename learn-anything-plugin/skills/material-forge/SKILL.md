@@ -141,31 +141,33 @@ Adjust fading pace to learner level (from knowledge graph): novice = 1 step per 
 
 Vary surface features across versions (different numbers, scenarios, contexts) while keeping the deep structure identical.
 
-### 2b. StudyForge HTML Artifact Layer
+### 2b. StudyForge HTML Artifact Request Layer
 
 For each task class that needs a learner-facing explanation artifact, create or update `teach/bridge/lesson-request.json` and invoke **Lesson Studio**.
 
-Lesson Studio is the learn-anything wrapper around StudyForge HTML generation. It receives upstream materials, prepares the generation context, and uses StudyForge-style rules to produce the final self-contained HTML artifact.
+Material Forge owns the artifact request. Lesson Studio renders that request through StudyForge-style HTML rules.
 
 1. Create or update `teach/bridge/lesson-request.json` with:
    - topic / task-class scope
    - learner goal and identity framing
    - must-cover misconceptions, prerequisites, and transfer targets
-   - requested section types, exercise types, reflections, scenarios, labs, and assessments
+   - explicit ordered section list or `page_spec`
+   - explicit block types: examples, checks, reflections, scenarios, labs, exam prep, summaries, next steps
    - references to relevant worked examples, practice sets, assessments, visuals, and source packs
-   - whether the artifact needs source grounding, citations, exam prep, or an annotated study guide
-2. Invoke **Lesson Studio** to generate a StudyForge-style self-contained HTML artifact under `teach/courses/`.
+   - whether the artifact needs source grounding, citations, exam prep, annotations, or an interactive study guide
+2. Invoke **Lesson Studio** to render the request as a StudyForge-style self-contained HTML artifact under `teach/courses/`.
 3. Lesson Studio owns:
-   - HTML generation
+   - HTML rendering
    - annotation runtime
    - localStorage persistence
    - notes export/import
-   - quiz and exam-prep interactivity
+   - requested quiz/check/exam-prep interactivity
    - final `teach/bridge/lesson-result.json`
 4. Keep authority boundaries clean:
-   - Material Forge decides what material is needed
-   - Lesson Studio prepares the generation context and wraps StudyForge generation
-   - Lesson Studio must not invent missing project/system context
+   - Material Forge decides what learner-facing artifact is needed
+   - Material Forge supplies the content plan / page spec
+   - Lesson Studio renders the supplied page spec
+   - StudyForge rules provide HTML/runtime mechanics
    - Material Forge must not duplicate HTML structure, annotation behavior, quiz UI, or progress runtime
    - Training Conductor remains the only owner of progress/mastery updates
 

@@ -11,37 +11,22 @@ Use this checklist before finalizing any StudyForge-generated HTML artifact.
 - It does not require a server.
 - It does not depend on external frameworks.
 
+## Page Spec Fidelity
+
+- The visible sections match the upstream `page_spec` order.
+- Block types match the upstream `page_spec`.
+- No reflection block is present unless requested.
+- No scenario block is present unless requested.
+- No programming lab is present unless requested.
+- No exam/check section is present unless requested.
+- No extra project/system/application/team context is introduced outside provided source material.
+
 ## Learning Design
 
-- The learner can tell what they will be able to do after the page.
-- The opening connects the topic to the learner's mission when mission context exists.
+- The learner can tell what the requested artifact is for.
 - The explanation is scoped to the current request.
-- The page includes examples.
-- The page includes typical mistakes or misconceptions when useful.
-- The page includes interactive checks.
-- Exam-prep requests include exam-style practice.
-- The page does not assume the learner has a system, project, service, application, team, company, or codebase unless upstream context provides one.
-
-## UI Answer Leakage
-
-- Placeholders are neutral.
-- Correct answers are not visible in the initial UI.
-- Explanations that reveal answers are hidden until attempt/submission/reveal.
-- Solution details are not open by default.
-- First-level hints do not reveal the exact answer.
-
-## Programming Labs
-
-- No learner-facing `Виртуальный файл:` / `Virtual file:` labels.
-- Bug Hunt code is editable directly.
-- Read-only code blocks are not used as the only copy of code that must be fixed.
-- Local filenames appear only in verification instructions.
-
-## Learner Tools Menu
-
-- Export/import/reset controls exist.
-- Controls are inside a separate menu.
-- The learner tools container is not sticky, fixed, absolute, or overlaying content.
+- Examples and typical mistakes appear only when requested or provided in source material.
+- Interactive checks match the requested interactions.
 
 ## Sources
 
@@ -52,11 +37,12 @@ Use this checklist before finalizing any StudyForge-generated HTML artifact.
 
 ## Runtime
 
-- Quiz/check interactions work.
-- Annotation controls work.
+- Requested quiz/check interactions work.
+- Requested annotation controls work.
 - Notes export works.
 - Notes import works.
 - localStorage restore works after reload.
+- Learner tools are in a separate menu, not a sticky/fixed overlay.
 - The page remains readable if JavaScript fails.
 
 ## System Boundaries
@@ -65,11 +51,3 @@ Use this checklist before finalizing any StudyForge-generated HTML artifact.
 - The HTML does not update `knowledge-graph.json`.
 - The HTML does not claim mastery.
 - `lesson-result.json` points to the generated HTML and runtime features.
-
-## Deterministic Check
-
-Run when available:
-
-```bash
-python3 skills/lesson-studio/scripts/validate_studyforge_html.py learn-anything/<skill-slug>/teach/courses/<file>.html
-```

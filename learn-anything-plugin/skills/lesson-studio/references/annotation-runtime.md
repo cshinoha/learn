@@ -1,6 +1,6 @@
 # Annotation Runtime
 
-Add selection-based learner annotations to StudyForge-generated HTML.
+Add selection-based learner annotations to StudyForge-generated HTML when the page spec requests annotations.
 
 ## DOM Hooks
 
@@ -19,13 +19,23 @@ button
 input
 textarea
 select
-.sf-toolbar
+.sf-learner-menu
 .sf-modal
 .quiz-option
 .exam-option
-#sfLearnerTools
-#sfAnnotationToolbar
 ```
+
+## Required UI
+
+Include this toolbar near the end of `<body>` when annotations are enabled:
+
+```html
+<div id="sfAnnotationToolbar" class="sf-annotation-toolbar" hidden>
+  <button type="button" id="sfAnnotateBtn">Аннотировать</button>
+</div>
+```
+
+The toolbar must contain only the annotate action. It must hide on Escape, outside click, new selection, annotation save, or cancelled/empty prompt.
 
 ## Stored State
 
@@ -35,38 +45,7 @@ Store annotation state in `localStorage` under:
 studyforge:<course-id>:state
 ```
 
-Suggested state shape:
-
-```json
-{
-  "schema": "studyforge-state-v1",
-  "courseId": "...",
-  "updatedAt": "...",
-  "annotations": [
-    {
-      "id": "ann-001",
-      "blockId": "section-1-p1",
-      "start": 120,
-      "end": 153,
-      "selectedText": "selected visible text",
-      "prefix": "...",
-      "suffix": "...",
-      "note": "learner note",
-      "createdAt": "...",
-      "updatedAt": "..."
-    }
-  ],
-  "answers": {},
-  "choices": {},
-  "exam": {},
-  "codeLabs": {},
-  "ui": {}
-}
-```
-
-## Offset Rule
-
-Calculate offsets against the visible text of the nearest `.sf-annotatable[data-sf-block]` block, not against `innerHTML` and not against the full document.
+Use visible-text offsets, not `innerHTML` offsets.
 
 ## Required Features
 
@@ -78,7 +57,7 @@ The generated page must support:
 - export notes as JSON;
 - import notes from JSON;
 - clear notes;
-- avoid obvious overlapping annotation ranges within the same block.
+- avoid overlapping annotation ranges within the same block.
 
 ## Boundaries
 

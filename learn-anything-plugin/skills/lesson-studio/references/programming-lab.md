@@ -1,16 +1,16 @@
-# Programming Lab Mode
+# Programming Lab Rendering
 
-Use this reference only when the Lesson Studio generation context explicitly requests a programming lab or supplies lab requirements.
+Use this reference only when the Lesson Studio page spec includes a `programming_lab` block.
 
-## Source of Truth
+## Renderer Boundary
 
-Do not create programming labs merely because the topic is programming-related. Labs, lab type, scenario, target language, and code context must come from Lesson Studio, the user's request, or provided study material.
+This file describes how to render a provided programming lab. It does not authorize adding a lab because the topic is programming-related.
 
-Do not infer an existing learner system, project, service, application, team, or codebase unless it is explicitly provided.
+The page spec must provide the lab intent, language, editable code, checks, hints, and any filename needed for local verification.
 
-## Goal
+## Editable Code Rule
 
-Create embedded programming practice inside the same StudyForge HTML file. The learner must edit the relevant code directly in the HTML lesson.
+When the lab asks the learner to fix, complete, refactor, or inspect code, the relevant code must be editable directly in the HTML lesson.
 
 Do not use the old "virtual source file" UI pattern. Do not show labels like:
 
@@ -61,66 +61,13 @@ Read-only `<pre><code>` blocks are allowed only for:
 
 For Bug Hunt, the buggy code must be editable. Do not ask the learner to write a corrected fragment in a separate answer field while the buggy code remains read-only.
 
-## Exercise Patterns
+## Hints
 
-Use only exercise patterns requested by the upstream context.
+Use only hints provided by the page spec. If hint levels are provided, render them as closed reveal blocks. Do not invent extra hint levels.
 
-### Bug Hunt
+## Verification
 
-Show editable buggy code. The learner changes the code directly.
-
-Use for:
-- null handling;
-- integer overflow;
-- off-by-one errors;
-- concurrency mistakes;
-- resource leaks;
-- wrong equality or hashing behavior.
-
-Required HTML adaptation:
-- show the buggy code in an editable code textarea;
-- preserve learner edits;
-- show edge-case tests, commands, or expected output;
-- use hints that do not reveal the exact answer at level 1.
-
-### Implement from Spec
-
-Use an editable method body, class, or function area. Provide specification and tests.
-
-### Fill in the Scaffold
-
-Use editable code with TODO markers inside the textarea.
-
-### Refactor and Optimize
-
-Use editable code. Ask the learner to preserve behavior while improving readability, design, performance, or memory usage.
-
-### Architecture Challenge
-
-Use only when explicitly requested by Lesson Studio context. Do not invent architecture prompts.
-
-## Hint Ladder
-
-Use staged help:
-
-- L1 Conceptual: ask a guiding question about the concept.
-- L2 Structural: provide pseudocode or steps in natural language.
-- L3 Fragment: show one small code pattern or line, not the full function.
-- Full solution: only after L3 is insufficient or the learner explicitly requests it.
-
-Avoid saying exactly which line to paste unless the learner asks for the answer.
-
-## Verification Before Completion
-
-When the learner says an exercise is finished or asks whether it is correct:
-
-1. Identify the relevant code lab and editable code field.
-2. Ask for or inspect compiler/test/runtime output when possible.
-3. If browser-side checks are implemented, run or use them before judging.
-4. Only then say whether it passes.
-5. If it fails, ask one guiding debugging question before giving a full correction.
-
-Do not claim correctness from visual inspection alone when verification output is available.
+Render verification commands, expected output, or browser checks only when provided by the page spec. Browser-side heuristic checks are allowed only if explicitly requested.
 
 ## State Persistence Requirements
 
@@ -140,5 +87,3 @@ The StudyForge state object must preserve programming-lab data:
   }
 }
 ```
-
-Export/import must include code answers, hint state, check results, and mastery state.
