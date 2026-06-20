@@ -39,10 +39,10 @@ Onboarding (1-2 conversations):
 Learning (ongoing, session-by-session):
 
   Training Conductor ──> Lesson Studio
-  (Socratic teaching,     (StudyForge HTML generation,
-   adaptive difficulty,    annotated self-contained courses,
-   mastery gates,          references, glossary,
-   progress tracking)      mission-grounded explanations)
+  (Socratic teaching,     (teach-style HTML lessons,
+   adaptive difficulty,    references, glossary,
+   mastery gates,          mission-grounded explanations)
+   progress tracking)
 ```
 
 ## What's New in v2.0
@@ -53,7 +53,7 @@ Learning (ongoing, session-by-session):
 - **Session transcripts** — Full session logs saved to `transcripts/` for review
 - **Curriculum updates** — `/update` command for evolving fields
 - **Material generation** — `/materials` command for on-demand content with dedicated subagents
-- **StudyForge HTML artifacts** — Lesson Studio wraps StudyForge generation to create annotated self-contained HTML courses, study guides, exam-prep pages, reference pages, and glossary-driven explanations inside the active skill workspace
+- **Teach-style lesson artifacts** — Lesson Studio creates beautiful self-contained HTML lessons, reference pages, and glossary-driven explanations inside the active skill workspace
 - **Improved research** — Ferriss interview protocol now mandatory, freshness detection for cutting-edge fields
 - **Better visuals** — WCAG-compliant color contrast, inline SVG over Mermaid for learning materials
 - **Expert panel** — Skill Researcher identifies masters of the field for persona selection
@@ -69,7 +69,7 @@ Learning (ongoing, session-by-session):
 | `curriculum-architect` | 4C/ID whole-task sequencing, Elaboration Theory epitome, productive failure placement |
 | `material-forge` | Anki flashcards, worked examples, practice sets, assessments, visualizations, and lesson-generation orchestration |
 | `training-conductor` | Interactive sessions using 5 templates (A-E), escalation ladder, real-time calibration |
-| `lesson-studio` | Wraps StudyForge HTML generation to create annotated self-contained HTML courses, study guides, exam-prep pages, quick-reference pages, glossary updates, and mission-grounded explanation artifacts |
+| `lesson-studio` | Teach-style HTML lessons, quick-reference pages, glossary updates, and mission-grounded explanation artifacts |
 | `dashboard-generator` | React artifact with knowledge graph, curriculum roadmap, retention metrics |
 
 ## State Files

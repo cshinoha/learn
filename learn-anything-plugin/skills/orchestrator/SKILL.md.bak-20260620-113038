@@ -15,7 +15,7 @@ Act as the central coordinator of a meta-learning plugin system that helps peopl
 4. **Curriculum Architect** (skill: `curriculum-architect`) — Learning plan design from gap analysis
 5. **Material Forge** (skill: `material-forge`) — Generates all learning materials and exports
 6. **Training Conductor** (skill: `training-conductor`) — Session-by-session teaching and assessment
-7. **Lesson Studio** (skill: `lesson-studio`) — Wraps StudyForge HTML generation to create annotated self-contained HTML courses, reference pages, glossary updates, and mission-grounded explanation artifacts
+7. **Lesson Studio** (skill: `lesson-studio`) — Teach-style HTML lessons, reference pages, glossary updates, mission-grounded explanation artifacts
 8. **Dashboard Generator** (skill: `dashboard-generator`) — Visual progress artifact
 
 ## References
@@ -43,7 +43,7 @@ learn-anything/
 │   │   ├── MISSION.md
 │   │   ├── GLOSSARY.md
 │   │   ├── RESOURCES.md
-│   │   ├── courses/
+│   │   ├── lessons/
 │   │   ├── reference/
 │   │   └── bridge/
 │   └── external-imports/
@@ -116,11 +116,10 @@ ELIF learn-anything/<slug>/srs-cards.json does NOT exist:
 
 ELIF user wants a training session OR says "let's learn" / "continue" / "next session":
   -> ROUTE to Training Conductor
-  -> Training Conductor may invoke Lesson Studio if the session needs a learner-facing StudyForge-style HTML course, annotated lesson, exam-prep artifact, or refreshed reference artifact
+  -> Training Conductor may invoke Lesson Studio if the session needs a learner-facing HTML lesson or refreshed reference artifact
 
-ELIF user asks for an explanation artifact / lesson / course / study guide / exam prep / annotated HTML / interactive HTML / "make me a lesson" / "generate a reference page":
+ELIF user asks for an explanation artifact / "explain the current topic" / "make me a lesson" / "generate a reference page":
   -> ROUTE to Lesson Studio
-  -> Lesson Studio wraps StudyForge HTML generation and writes the artifact under teach/courses/
   -> Then route back to Training Conductor if the request is part of an active session
 
 ELIF user asks about progress / "show my dashboard" / "how am I doing":
@@ -214,7 +213,7 @@ Once in the LEARNING phase:
 
 1. Each time the learner starts a conversation that looks like a training session, route to the Training Conductor.
 2. The Conductor reads state, decides whether a teach-style lesson artifact is needed, and invokes Lesson Studio when appropriate.
-3. Lesson Studio writes StudyForge-style learner-facing HTML artifacts under `teach/courses/` but does NOT update mastery or progress.
+3. Lesson Studio writes learner-facing HTML artifacts under `teach/` but does NOT update mastery or progress.
 4. The Conductor runs the session and remains the sole writer of `progress.json` and in-session mastery updates.
 5. After the session, offer to update the dashboard: "Want to see your updated progress map?"
 6. If the Conductor flags upstream feedback needs, route to the appropriate component:
